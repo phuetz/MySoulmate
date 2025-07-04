@@ -9,9 +9,14 @@ export default function ChatScreen() {
   const { companion, updateInteractions, isPremium } = useAppState();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showNSFWModal, setShowNSFWModal] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+
+  const filteredMessages = messages.filter((m) =>
+    m.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -126,9 +131,19 @@ export default function ChatScreen() {
         </View>
       </View>
 
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search messages..."
+          placeholderTextColor="#999999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={filteredMessages}
         renderItem={renderMessageItem}
         keyExtractor={(item) => item.id}
         style={styles.messageList}
@@ -234,6 +249,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#9C6ADE',
     fontStyle: 'italic',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  searchInput: {
+    backgroundColor: '#F0F0F0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    fontSize: 14,
+    color: '#333333',
   },
   messageList: {
     flex: 1,
