@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Heart, Gift, Clock, Star, MessageCircle, Mic, Video } from 'lucide-react-native';
+import { Heart, Gift, Clock, Star, MessageCircle, Mic, Video, Trophy, Target, Zap } from 'lucide-react-native';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { useAppState } from '@/context/AppStateContext';
 
@@ -60,6 +60,29 @@ export default function HomeScreen() {
             <Text style={styles.statValue}>{companion.gifts}</Text>
             <Text style={styles.statLabel}>Gifts</Text>
           </View>
+          <View style={styles.statItem}>
+            <Trophy size={24} color="#9C6ADE" />
+            <Text style={styles.statValue}>Lv.{companion.level || 1}</Text>
+            <Text style={styles.statLabel}>Level</Text>
+          </View>
+        </View>
+
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressTitle}>Level Progress</Text>
+            <Text style={styles.xpText}>{companion.xp || 0} XP</Text>
+          </View>
+          <View style={styles.progressBar}>
+            <View 
+              style={[
+                styles.progressFill, 
+                { width: `${((companion.xp || 0) % 100)}%` }
+              ]} 
+            />
+          </View>
+          <Text style={styles.progressSubtext}>
+            {100 - ((companion.xp || 0) % 100)} XP to level {(companion.level || 1) + 1}
+          </Text>
         </View>
 
         <View style={styles.activityFeed}>
@@ -94,6 +117,10 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/video')}>
               <Video size={24} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Video</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/games')}>
+              <Target size={24} color="#FFFFFF" />
+              <Text style={styles.actionButtonText}>Games</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -188,6 +215,50 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#777777',
     marginTop: 4,
+  },
+  progressContainer: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  progressTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  xpText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#9C6ADE',
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: '#E1E1E1',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF6B8A',
+    borderRadius: 4,
+  },
+  progressSubtext: {
+    fontSize: 12,
+    color: '#666666',
+    textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 18,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Heart, MessageCircle, Mic, Video, User, Settings, Gift, Bell, Sparkles } from 'lucide-react-native';
+import { Heart, MessageCircle, Mic, Video, User, Settings, Gift, Bell, Sparkles, Book, Gamepad2, Calendar } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 export default function TabLayout() {
@@ -65,6 +65,33 @@ export default function TabLayout() {
           title: 'Gifts',
           tabBarIcon: ({ color, size }) => (
             <Gift size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="journal"
+        options={{
+          title: 'Journal',
+          tabBarIcon: ({ color, size }) => (
+            <Book size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="games"
+        options={{
+          title: 'Games',
+          tabBarIcon: ({ color, size }) => (
+            <Gamepad2 size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: 'Calendar',
+          tabBarIcon: ({ color, size }) => (
+            <Calendar size={size} color={color} />
           ),
         }}
       />

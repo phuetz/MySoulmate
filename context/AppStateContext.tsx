@@ -23,6 +23,9 @@ interface CompanionData {
   }[];
   isPremium?: boolean;
   arExperiences?: number; // Track number of AR experiences
+  level?: number; // Gamification level
+  xp?: number; // Experience points
+  achievements?: string[]; // Unlocked achievements
 }
 
 interface AppStateContextType {
@@ -77,7 +80,10 @@ const defaultCompanion: CompanionData = {
       time: '2 days ago'
     }
   ],
-  arExperiences: 0
+  arExperiences: 0,
+  level: 1,
+  xp: 150,
+  achievements: ['first_conversation', 'early_bird']
 };
 
 // Provider component
@@ -97,7 +103,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       ...prev,
       interactions: (prev.interactions || 0) + count,
       messages: (prev.messages || 0) + (count > 0 ? 1 : 0),
-      arExperiences: (prev.arExperiences || 0) + (count === 5 ? 1 : 0) // Increment AR experiences for AR interactions
+      arExperiences: (prev.arExperiences || 0) + (count === 5 ? 1 : 0), // Increment AR experiences for AR interactions
+      xp: (prev.xp || 0) + (count * 10), // Gain XP for interactions
+      level: Math.floor(((prev.xp || 0) + (count * 10)) / 100) + 1 // Level up every 100 XP
     }));
   };
 

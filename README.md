@@ -47,6 +47,24 @@ MySoulmate est une application complète de compagnon IA construite avec React N
 - Messages programmés
 - Support push notifications
 
+#### 🎮 **Gamification et jeux**
+- Système de niveaux et XP
+- Mini-jeux interactifs avec le compagnon
+- Achievements et défis
+- Quiz et jeux de mémoire
+
+#### 📝 **Journal intime partagé**
+- Écriture de journal avec réponses du compagnon
+- Suivi d'humeurs et émotions
+- Entrées privées ou partagées
+- Historique des moments importants
+
+#### 📅 **Calendrier des rendez-vous**
+- Planification d'événements avec le compagnon
+- Rappels automatiques
+- Différents types d'activités
+- Suivi des moments passés ensemble
+
 #### 👑 **Fonctionnalités premium**
 - Contenu NSFW
 - Avatars exclusifs
@@ -164,6 +182,9 @@ mysoulmate-app/
 │   │   ├── ar-view.tsx           # Réalité augmentée
 │   │   ├── gifts.tsx             # Boutique de cadeaux
 │   │   ├── customize.tsx         # Personnalisation
+│   │   ├── journal.tsx           # Journal intime
+│   │   ├── games.tsx             # Mini-jeux
+│   │   ├── calendar.tsx          # Calendrier
 │   │   ├── notifications.tsx     # Notifications
 │   │   └── settings.tsx          # Paramètres
 │   ├── admin/                    # Module d'administration
@@ -225,6 +246,10 @@ mysoulmate-app/
 - Structure de l'API backend
 - Tests unitaires (partiel)
 - Documentation API
+- Système de gamification avec niveaux et XP
+- Journal intime avec réponses du compagnon
+- Mini-jeux interactifs (Quiz, Memory Match)
+- Calendrier de rendez-vous
 
 ### 🔄 En cours
 - Intégration AI réelle (actuellement mock)
