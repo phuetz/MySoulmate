@@ -45,6 +45,12 @@ exports.validateResetPassword = [
     .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];
 
+// Validation pour le rafraîchissement du token
+exports.validateRefreshToken = [
+  body('refreshToken')
+    .notEmpty().withMessage('Le refresh token est requis')
+];
+
 // Validation pour la mise à jour d'un utilisateur
 exports.validateUpdateUser = [
   body('name')
