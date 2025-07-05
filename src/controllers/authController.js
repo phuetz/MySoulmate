@@ -3,8 +3,10 @@
  */
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { User } = require('../models');
+const { User, Sequelize } = require('../models');
 const logger = require('../utils/logger');
+const crypto = require('crypto');
+const { Op } = Sequelize;
 
 /**
  * @desc    Inscription d'un nouvel utilisateur
@@ -141,6 +143,76 @@ exports.getCurrentUser = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Erreur lors de la récupération du profil:', error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Demander une réinitialisation de mot de passe
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+
+    if (user) {
+      const token = crypto.randomBytes(20).toString('hex');
+      await user.update({
+        passwordResetToken: token,
+        passwordResetExpires: Date.now() + 3600000 // 1h
+      });
+      // Dans une vraie appli, on enverrait un email ici
+      return res.status(200).json({ message: 'Email de réinitialisation envoyé', token });
+    }
+
+    // Pour la sécurité, ne pas révéler que l'email n'existe pas
+    res.status(200).json({ message: 'Email de réinitialisation envoyé' });
+  } catch (error) {
+    logger.error("Erreur lors de la demande de reset:", error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Réinitialiser le mot de passe avec un token
+ * @route   POST /api/auth/reset-password
+ * @access  Public
+ */
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { token, password } = req.body;
+
+    const user = await User.findOne({
+      where: {
+        passwordResetToken: token,
+        passwordResetExpires: { [Op.gt]: Date.now() }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Token invalide ou expiré' });
+    }
+
+    user.password = password;
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+    await user.save();
+
+    res.status(200).json({ message: 'Mot de passe réinitialisé avec succès' });
+  } catch (error) {
+    logger.error("Erreur lors de la réinitialisation du mot de passe:", error);
     next(error);
   }
 };

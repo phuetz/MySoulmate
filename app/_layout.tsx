@@ -16,6 +16,8 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
           <Stack.Screen name="auth/login" options={{ headerShown: false, title: 'Login' }} />
           <Stack.Screen name="auth/register" options={{ headerShown: false, title: 'Register' }} />
+          <Stack.Screen name="auth/forgot-password" options={{ headerShown: false, title: 'Forgot Password' }} />
+          <Stack.Screen name="auth/reset-password" options={{ headerShown: false, title: 'Reset Password' }} />
           <Stack.Screen name="admin" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />

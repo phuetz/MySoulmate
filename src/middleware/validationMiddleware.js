@@ -24,9 +24,25 @@ exports.validateLogin = [
   body('email')
     .notEmpty().withMessage('L\'email est requis')
     .isEmail().withMessage('L\'email doit être valide'),
-  
+
   body('password')
     .notEmpty().withMessage('Le mot de passe est requis')
+];
+
+// Validation pour la demande de réinitialisation du mot de passe
+exports.validateForgotPassword = [
+  body('email')
+    .notEmpty().withMessage('L\'email est requis')
+    .isEmail().withMessage('L\'email doit être valide')
+];
+
+// Validation pour la réinitialisation du mot de passe
+exports.validateResetPassword = [
+  body('token')
+    .notEmpty().withMessage('Le token est requis'),
+  body('password')
+    .notEmpty().withMessage('Le mot de passe est requis')
+    .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];
 
 // Validation pour la mise à jour d'un utilisateur
