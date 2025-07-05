@@ -42,10 +42,16 @@ exports.register = async (req, res, next) => {
       process.env.JWT_SECRET || 'votre_secret_jwt',
       { expiresIn: process.env.JWT_EXPIRATION || '24h' }
     );
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    await user.update({
+      refreshToken,
+      refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 jours
+    });
 
     res.status(201).json({
       message: 'Utilisateur enregistré avec succès',
       token,
+      refreshToken,
       user: {
         id: user.id,
         name: user.name,
@@ -100,10 +106,16 @@ exports.login = async (req, res, next) => {
       process.env.JWT_SECRET || 'votre_secret_jwt',
       { expiresIn: process.env.JWT_EXPIRATION || '24h' }
     );
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    await user.update({
+      refreshToken,
+      refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000
+    });
 
     res.status(200).json({
       message: 'Connexion réussie',
       token,
+      refreshToken,
       user: {
         id: user.id,
         name: user.name,
@@ -213,6 +225,47 @@ exports.resetPassword = async (req, res, next) => {
     res.status(200).json({ message: 'Mot de passe réinitialisé avec succès' });
   } catch (error) {
     logger.error("Erreur lors de la réinitialisation du mot de passe:", error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Rafraîchir le token d'accès
+ * @route   POST /api/auth/refresh-token
+ * @access  Public
+ */
+exports.refreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(400).json({ message: 'Refresh token manquant' });
+    }
+
+    const user = await User.findOne({
+      where: {
+        refreshToken,
+        refreshTokenExpires: { [Op.gt]: Date.now() }
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Token invalide ou expiré' });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'votre_secret_jwt',
+      { expiresIn: process.env.JWT_EXPIRATION || '24h' }
+    );
+    const newRefreshToken = crypto.randomBytes(40).toString('hex');
+    await user.update({
+      refreshToken: newRefreshToken,
+      refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.status(200).json({ token, refreshToken: newRefreshToken });
+  } catch (error) {
+    logger.error('Erreur lors du rafraîchissement du token:', error);
     next(error);
   }
 };

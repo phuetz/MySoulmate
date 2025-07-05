@@ -8,7 +8,8 @@ const {
   validateRegister,
   validateLogin,
   validateForgotPassword,
-  validateResetPassword
+  validateResetPassword,
+  validateRefreshToken
 } = require('../middleware/validationMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -76,6 +77,31 @@ router.post('/forgot-password', validateForgotPassword, authController.forgotPas
 
 // Réinitialisation du mot de passe
 router.post('/reset-password', validateResetPassword, authController.resetPassword);
+
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Rafraîchir le token d'accès
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Nouveau token généré
+ *       401:
+ *         description: Token invalide ou expiré
+ */
+router.post('/refresh-token', validateRefreshToken, authController.refreshToken);
 
 /**
  * @swagger

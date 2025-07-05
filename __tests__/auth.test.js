@@ -20,6 +20,8 @@ afterAll(async () => {
   await sequelize.close();
 });
 
+let refreshToken;
+
 describe('Auth Routes', () => {
   describe('POST /api/auth/register', () => {
     it('devrait enregistrer un nouvel utilisateur', async () => {
@@ -71,13 +73,10 @@ describe('Auth Routes', () => {
   describe('POST /api/auth/login', () => {
     beforeAll(async () => {
       // Créer un utilisateur pour les tests de connexion
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('loginpass123', salt);
-      
       await User.create({
         name: 'Login Test',
         email: 'login@example.com',
-        password: hashedPassword
+        password: 'loginpass123'
       });
     });
 
@@ -88,11 +87,14 @@ describe('Auth Routes', () => {
           email: 'login@example.com',
           password: 'loginpass123'
         });
-      
+
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('refreshToken');
       expect(res.body).toHaveProperty('user');
       expect(res.body.user).toHaveProperty('email', 'login@example.com');
+
+      refreshToken = res.body.refreshToken;
     });
 
     it('devrait renvoyer une erreur avec un email incorrect', async () => {
@@ -133,6 +135,7 @@ describe('Auth Routes', () => {
         });
       
       token = res.body.token;
+      refreshToken = res.body.refreshToken;
     });
 
     it('devrait renvoyer les informations de l\'utilisateur connecté', async () => {
@@ -160,6 +163,26 @@ describe('Auth Routes', () => {
 
       expect(res.statusCode).toEqual(401);
       expect(res.body).toHaveProperty('message', 'Token invalide ou expiré');
+    });
+  });
+
+  describe('POST /api/auth/refresh-token', () => {
+    it('devrait rafraîchir le token', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/refresh-token')
+        .send({ refreshToken });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('refreshToken');
+    });
+
+    it('devrait renvoyer une erreur avec un token invalide', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/refresh-token')
+        .send({ refreshToken: 'wrong' });
+
+      expect(res.statusCode).toEqual(401);
     });
   });
 

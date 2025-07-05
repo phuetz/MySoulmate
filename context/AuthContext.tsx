@@ -15,6 +15,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshToken: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,6 +89,21 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
 
+  const refreshToken = async () => {
+    try {
+      const token = await authService.getRefreshToken();
+      if (!token) return;
+      const response = await authService.refreshAccessToken(token);
+      setIsAuthenticated(true);
+      if (response?.user) {
+        setUser(response.user);
+      }
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      await logout();
+    }
+  };
+
   return (
     <AuthContext.Provider 
       value={{ 
@@ -95,8 +111,9 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         isLoading, 
         isAuthenticated, 
         login, 
-        register, 
-        logout 
+        register,
+        logout,
+        refreshToken
       }}
     >
       {children}
