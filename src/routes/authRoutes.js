@@ -4,7 +4,12 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { validateRegister, validateLogin } = require('../middleware/validationMiddleware');
+const {
+  validateRegister,
+  validateLogin,
+  validateForgotPassword,
+  validateResetPassword
+} = require('../middleware/validationMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
 /**
@@ -65,6 +70,12 @@ router.post('/register', validateRegister, authController.register);
  *         description: Email ou mot de passe incorrect
  */
 router.post('/login', validateLogin, authController.login);
+
+// Demande de réinitialisation de mot de passe
+router.post('/forgot-password', validateForgotPassword, authController.forgotPassword);
+
+// Réinitialisation du mot de passe
+router.post('/reset-password', validateResetPassword, authController.resetPassword);
 
 /**
  * @swagger

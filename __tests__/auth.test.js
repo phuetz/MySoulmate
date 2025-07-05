@@ -24,7 +24,7 @@ describe('Auth Routes', () => {
   describe('POST /api/auth/register', () => {
     it('devrait enregistrer un nouvel utilisateur', async () => {
       const res = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           name: 'Test User',
           email: 'test@example.com',
@@ -42,7 +42,7 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer une erreur si l\'email est déjà utilisé', async () => {
       const res = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           name: 'Another User',
           email: 'test@example.com',
@@ -55,7 +55,7 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer une erreur si les données sont invalides', async () => {
       const res = await request(app)
-        .post('/api/auth/register')
+        .post('/api/v1/auth/register')
         .send({
           name: 'T',
           email: 'invalid-email',
@@ -83,7 +83,7 @@ describe('Auth Routes', () => {
 
     it('devrait connecter un utilisateur avec des identifiants valides', async () => {
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'login@example.com',
           password: 'loginpass123'
@@ -97,7 +97,7 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer une erreur avec un email incorrect', async () => {
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'wrong@example.com',
           password: 'loginpass123'
@@ -109,7 +109,7 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer une erreur avec un mot de passe incorrect', async () => {
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'login@example.com',
           password: 'wrongpassword'
@@ -126,7 +126,7 @@ describe('Auth Routes', () => {
     beforeAll(async () => {
       // Obtenir un token pour les tests
       const res = await request(app)
-        .post('/api/auth/login')
+        .post('/api/v1/auth/login')
         .send({
           email: 'login@example.com',
           password: 'loginpass123'
@@ -137,7 +137,7 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer les informations de l\'utilisateur connecté', async () => {
       const res = await request(app)
-        .get('/api/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', `Bearer ${token}`);
       
       expect(res.statusCode).toEqual(200);
@@ -147,7 +147,7 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer une erreur sans token', async () => {
       const res = await request(app)
-        .get('/api/auth/me');
+        .get('/api/v1/auth/me');
       
       expect(res.statusCode).toEqual(401);
       expect(res.body).toHaveProperty('message', 'Accès non autorisé, token manquant');
@@ -155,11 +155,52 @@ describe('Auth Routes', () => {
 
     it('devrait renvoyer une erreur avec un token invalide', async () => {
       const res = await request(app)
-        .get('/api/auth/me')
+        .get('/api/v1/auth/me')
         .set('Authorization', 'Bearer invalidtoken');
-      
+
       expect(res.statusCode).toEqual(401);
       expect(res.body).toHaveProperty('message', 'Token invalide ou expiré');
+    });
+  });
+
+  describe('Password reset flow', () => {
+    let resetToken;
+
+    beforeAll(async () => {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('oldpassword', salt);
+      await User.create({
+        name: 'Reset User',
+        email: 'reset@example.com',
+        password: hashedPassword
+      });
+    });
+
+    it('devrait générer un token de réinitialisation', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/forgot-password')
+        .send({ email: 'reset@example.com' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
+      resetToken = res.body.token;
+    });
+
+    it('devrait réinitialiser le mot de passe avec un token valide', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/reset-password')
+        .send({ token: resetToken, password: 'newpassword123' });
+
+      expect(res.statusCode).toEqual(200);
+    });
+
+    it('devrait se connecter avec le nouveau mot de passe', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: 'reset@example.com', password: 'newpassword123' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
     });
   });
 });
