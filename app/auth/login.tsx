@@ -1,35 +1,83 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { authService } from '@/services/authService';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
-  
+  const { login, isLoading, refreshToken } = useAuth();
+  const { isHardwareAvailable, isEnrolled, authenticate } = useBiometricAuth();
+
+  const [hasSavedSession, setHasSavedSession] = useState(false);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{email?: string; password?: string}>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
+
+  useEffect(() => {
+    authService.getRefreshToken().then((token) => setHasSavedSession(!!token));
+  }, []);
 
   const validate = () => {
-    const newErrors: {email?: string; password?: string} = {};
-    
-    if (!email) newErrors.email = "Email is required";
-    if (!password) newErrors.password = "Password is required";
-    
+    const newErrors: { email?: string; password?: string } = {};
+
+    if (!email) newErrors.email = 'Email is required';
+    if (!password) newErrors.password = 'Password is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async () => {
     if (!validate()) return;
-    
+
     try {
       await login(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed. Please try again.';
+      const message =
+        error.response?.data?.message || 'Login failed. Please try again.';
       Alert.alert('Login Error', message);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    if (!hasSavedSession) {
+      Alert.alert(
+        'Biometric Login',
+        'No saved session found. Please login normally first.',
+      );
+      return;
+    }
+
+    if (!isHardwareAvailable || !isEnrolled) {
+      Alert.alert('Biometric Login', 'Biometric authentication not available.');
+      return;
+    }
+
+    const result = await authenticate();
+    if (result.success) {
+      try {
+        await refreshToken();
+        router.replace('/(tabs)');
+      } catch (error) {
+        Alert.alert(
+          'Login Error',
+          'Failed to restore session. Please login manually.',
+        );
+      }
     }
   };
 
@@ -37,7 +85,7 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <View style={styles.formContainer}>
         <Text style={styles.title}>Login</Text>
-        
+
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email</Text>
           <TextInput
@@ -48,9 +96,11 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+          {errors.email ? (
+            <Text style={styles.errorText}>{errors.email}</Text>
+          ) : null}
         </View>
-        
+
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Password</Text>
           <TextInput
@@ -60,14 +110,16 @@ export default function LoginScreen() {
             placeholder="Enter your password"
             secureTextEntry
           />
-          {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
+          {errors.password ? (
+            <Text style={styles.errorText}>{errors.password}</Text>
+          ) : null}
         </View>
         <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
           <Text style={styles.forgotPasswordLink}>Forgot Password?</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.loginButton} 
+
+        <TouchableOpacity
+          style={styles.loginButton}
           onPress={handleLogin}
           disabled={isLoading}
         >
@@ -77,7 +129,18 @@ export default function LoginScreen() {
             <Text style={styles.loginButtonText}>Login</Text>
           )}
         </TouchableOpacity>
-        
+
+        {hasSavedSession && (
+          <TouchableOpacity
+            style={styles.biometricButton}
+            onPress={handleBiometricLogin}
+          >
+            <Text style={styles.biometricButtonText}>
+              Login with Biometrics
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>Don't have an account?</Text>
           <TouchableOpacity onPress={() => router.push('/auth/register')}>
@@ -148,6 +211,18 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  biometricButton: {
+    backgroundColor: '#9C6ADE',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  biometricButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
   },
   registerContainer: {
