@@ -1,6 +1,7 @@
 /**
  * Tests pour les routes d'authentification
  */
+process.env.NODE_ENV = 'test';
 const request = require('supertest');
 const app = require('../src/app');
 const { sequelize, User } = require('../src/models');

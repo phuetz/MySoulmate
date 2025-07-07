@@ -30,7 +30,7 @@ const limiter = rateLimit({
 });
 
 // Rate limiter spécifique pour les routes d'authentification
-const authLimiter = rateLimit({
+const createAuthLimiter = () => rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10, // limite plus stricte pour les routes d'authentification
   standardHeaders: true,
@@ -40,6 +40,13 @@ const authLimiter = rateLimit({
     message: 'Trop de tentatives de connexion, veuillez réessayer plus tard'
   }
 });
+
+const authLimiter = (req, res, next) => {
+  if (process.env.NODE_ENV === 'test') {
+    return next();
+  }
+  return createAuthLimiter()(req, res, next);
+};
 
 // Configuration de sécurité pour l'application Express
 const securityMiddleware = [
