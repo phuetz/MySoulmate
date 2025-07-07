@@ -13,7 +13,7 @@
 
 ### AI Companion Core
 
-- [ ] Connect to a proper AI service (OpenAI, Anthropic, etc.) replacing the mock responses in `utils/aiUtils.ts`
+- [x] Connect to a proper AI service (OpenAI, Anthropic, etc.) replacing the mock responses in `utils/aiUtils.ts`
 - [ ] Implement proper conversation memory/history
 - [ ] Add personality fine-tuning capabilities
 - [ ] Implement sentiment analysis for more contextual responses
@@ -132,7 +132,7 @@
 
 ### AI Responses
 
-Replace `utils/aiUtils.ts` with an actual AI service implementation. Current implementation uses hardcoded responses.
+`utils/aiUtils.ts` now connects to OpenAI for real responses instead of hardcoded ones.
 
 ### User Authentication
 
