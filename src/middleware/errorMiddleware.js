@@ -17,7 +17,7 @@ exports.notFound = (req, res, next) => {
  */
 exports.errorHandler = (err, req, res, next) => {
   // Déterminer le code d'état - utiliser 500 par défaut si la réponse n'a pas de statut d'erreur
-  const statusCode = err.statusCode || res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = err.statusCode || (res.statusCode !== 200 ? res.statusCode : 500);
   
   // Préparer la réponse d'erreur
   const errorResponse = {
