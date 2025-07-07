@@ -1,17 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ArrowUp, Smile, Image as ImageIcon, CirclePlus as PlusCircle, Send } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
+import EmojiPicker from '@/components/EmojiPicker';
 import { generateAIResponse } from '@/utils/aiUtils';
 
 export default function ChatScreen() {
   const { companion, updateInteractions, isPremium } = useAppState();
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNSFWModal, setShowNSFWModal] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
+  const [reactionPickerVisible, setReactionPickerVisible] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   const filteredMessages = messages.filter((m) =>
@@ -19,17 +24,26 @@ export default function ChatScreen() {
   );
 
   useEffect(() => {
-    if (messages.length === 0) {
-      // Add initial greeting message
-      const initialMessage = {
-        id: '1',
-        text: `Hello there! I'm ${companion.name}. How are you doing today?`,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages([initialMessage]);
-    }
+    const loadMessages = async () => {
+      const stored = await AsyncStorage.getItem('chatMessages');
+      if (stored) {
+        setMessages(JSON.parse(stored));
+      } else {
+        const initialMessage = {
+          id: '1',
+          text: `Hello there! I'm ${companion.name}. How are you doing today?`,
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setMessages([initialMessage]);
+      }
+    };
+    loadMessages();
   }, [companion.name]);
+
+  useEffect(() => {
+    AsyncStorage.setItem('chatMessages', JSON.stringify(messages));
+  }, [messages]);
 
   const handleSend = async () => {
     if (message.trim() === '') return;
@@ -89,23 +103,56 @@ export default function ChatScreen() {
     }
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    setMessage(prev => prev + emoji);
+    setEmojiPickerVisible(false);
+  };
+
+  const handleAddReaction = (emoji: string) => {
+    if (!selectedMessageId) return;
+    setMessages(prev =>
+      prev.map(msg =>
+        msg.id === selectedMessageId
+          ? { ...msg, reactions: [...(msg.reactions || []), emoji] }
+          : msg
+      )
+    );
+    setReactionPickerVisible(false);
+    setSelectedMessageId(null);
+  };
+
   const renderMessageItem = ({ item }) => (
-    <View style={[styles.messageBubble, item.isUser ? styles.userBubble : styles.companionBubble]}>
-      {!item.isUser && (
-        <Image 
-          source={{ uri: companion.avatarUrl }} 
-          style={styles.messageBubbleAvatar} 
-        />
-      )}
-      <View style={[styles.messageContent, item.isUser ? styles.userContent : styles.companionContent]}>
-        <Text style={[styles.messageText, item.isUser ? styles.userText : styles.companionText]}>
-          {item.text}
-        </Text>
-        <Text style={styles.timestamp}>
-          {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </Text>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onLongPress={() => {
+        setSelectedMessageId(item.id);
+        setReactionPickerVisible(true);
+      }}
+    >
+      <View style={[styles.messageBubble, item.isUser ? styles.userBubble : styles.companionBubble]}>
+        {!item.isUser && (
+          <Image
+            source={{ uri: companion.avatarUrl }}
+            style={styles.messageBubbleAvatar}
+          />
+        )}
+        <View style={[styles.messageContent, item.isUser ? styles.userContent : styles.companionContent]}>
+          <Text style={[styles.messageText, item.isUser ? styles.userText : styles.companionText]}>
+            {item.text}
+          </Text>
+          <Text style={styles.timestamp}>
+            {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+          {item.reactions && item.reactions.length > 0 && (
+            <View style={styles.reactionsContainer}>
+              {item.reactions.map((r: string, idx: number) => (
+                <Text key={idx} style={styles.reaction}>{r}</Text>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -174,7 +221,7 @@ export default function ChatScreen() {
               placeholderTextColor="#999999"
               multiline
             />
-            <TouchableOpacity style={styles.inputAttachment}>
+            <TouchableOpacity style={styles.inputAttachment} onPress={() => setEmojiPickerVisible(true)}>
               <Smile size={24} color="#9C6ADE" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.inputAttachment}>
@@ -197,11 +244,21 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      <PremiumFeatureModal 
-        visible={showNSFWModal} 
+      <PremiumFeatureModal
+        visible={showNSFWModal}
         onClose={() => setShowNSFWModal(false)}
         featureName="NSFW Content"
         description="Unlock intimate conversations and NSFW content with your AI companion."
+      />
+      <EmojiPicker
+        visible={emojiPickerVisible}
+        onSelect={handleEmojiSelect}
+        onClose={() => setEmojiPickerVisible(false)}
+      />
+      <EmojiPicker
+        visible={reactionPickerVisible}
+        onSelect={handleAddReaction}
+        onClose={() => setReactionPickerVisible(false)}
       />
     </KeyboardAvoidingView>
   );
@@ -380,5 +437,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#FF6B8A',
     fontWeight: '500',
+  },
+  reactionsContainer: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
+  reaction: {
+    marginRight: 4,
+    fontSize: 16,
   },
 });

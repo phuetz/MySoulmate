@@ -21,11 +21,11 @@
 
 ### Chat Interface
 
-- [ ] Implement proper chat history storage and pagination
+- [x] Implement proper chat history storage and pagination
 - [x] Add message search functionality
 - [ ] Support media attachments (images, audio)
 - [x] Implement typing indicators when AI is generating a response
-- [ ] Add message reactions and emoji support
+- [x] Add message reactions and emoji support
 
 ### Voice Interactions
 
