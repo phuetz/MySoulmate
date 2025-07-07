@@ -12,6 +12,11 @@ const {
   validateRefreshToken
 } = require('../middleware/validationMiddleware');
 const { protect } = require('../middleware/authMiddleware');
+const { authLimiter } = require('../middleware/securityMiddleware');
+
+if (process.env.NODE_ENV !== 'test') {
+  router.use(authLimiter);
+}
 
 /**
  * @swagger
