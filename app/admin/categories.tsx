@@ -17,22 +17,15 @@ export default function CategoriesScreen() {
   }, []);
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredCategories(categories);
-    } else {
-      const filtered = categories.filter(
-        category => category.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredCategories(filtered);
-    }
-  }, [searchQuery, categories]);
+    fetchCategories(searchQuery);
+  }, [searchQuery]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (search?: string) => {
     try {
       setLoading(true);
-      const data = await categoryService.getCategories();
-      setCategories(data);
-      setFilteredCategories(data);
+      const data = await categoryService.getCategories({ search });
+      setCategories(data.categories || data);
+      setFilteredCategories(data.categories || data);
     } catch (error) {
       console.error('Error fetching categories:', error);
       Alert.alert('Error', 'Failed to load categories');
@@ -44,7 +37,7 @@ export default function CategoriesScreen() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchCategories();
+    fetchCategories(searchQuery);
   };
 
   const handleEdit = (categoryId: string) => {
