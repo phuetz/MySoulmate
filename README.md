@@ -14,6 +14,7 @@ MySoulmate est une application complète de compagnon IA construite avec React N
 #### 🎭 **Compagnons IA personnalisés**
 - Création de compagnons avec des traits de personnalité uniques
 - Personnalisation d'apparence avec plusieurs avatars
+- Génération d'avatars par IA à partir de vos photos
 - Développement de relations basé sur les interactions
 - Système de mémoire pour des conversations cohérentes
 
@@ -136,6 +137,7 @@ cp .env.example .env
 
 # Modifier les variables d'environnement selon votre configuration
 ```
+Assurez-vous notamment de renseigner `OPENAI_API_KEY` pour activer la génération d'avatars par IA.
 
 4. **Initialiser la base de données**
 ```bash

@@ -10,6 +10,7 @@ const userRoutes = require('../userRoutes');
 const productRoutes = require('../productRoutes');
 const categoryRoutes = require('../categoryRoutes');
 const giftRoutes = require('../giftRoutes');
+const avatarRoutes = require('../avatarRoutes');
 
 // Définir les routes pour l'API v1
 router.use('/auth', authRoutes);
@@ -17,5 +18,6 @@ router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/gifts', giftRoutes);
+router.use('/avatars', avatarRoutes);
 
 module.exports = router;
