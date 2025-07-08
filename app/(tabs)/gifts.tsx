@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, FlatList, Alert } from 'react-native';
 import { ShoppingBag, Gift, Star, Coins, Plus, Filter, Heart } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
-import { gifts, getCategoryColor, getVirtualCurrencyPackages, Gift as GiftType } from '@/data/giftData';
+import { getCategoryColor, getVirtualCurrencyPackages } from '@/data/giftData';
+import { giftService, Gift as GiftType } from '@/services/giftService';
 
 export default function GiftsScreen() {
   const { companion, updateCompanion, isPremium, virtualCurrency, setVirtualCurrency } = useAppState();
@@ -11,14 +12,27 @@ export default function GiftsScreen() {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showCurrencyOptions, setShowCurrencyOptions] = useState(false);
+  const [gifts, setGifts] = useState<GiftType[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await giftService.getGifts();
+        setGifts(data);
+      } catch (err) {
+        console.warn('Failed to load gifts', err);
+      }
+    };
+    load();
+  }, []);
 
   const filteredGifts = gifts.filter(gift => {
     if (selectedFilter === 'all') return true;
     return gift.category === selectedFilter;
   });
 
-  const purchasedGifts = companion.gifts ? 
-    gifts.filter(gift => companion.purchasedGifts?.includes(gift.id)) : 
+  const purchasedGifts = companion.gifts ?
+    gifts.filter(gift => companion.purchasedGifts?.includes(gift.id)) :
     [];
 
   const handleBuyGift = (gift: GiftType) => {
