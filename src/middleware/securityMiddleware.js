@@ -7,6 +7,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const cors = require('cors');
+const ipFilter = require('./ipFilterMiddleware');
 
 // Configuration de base pour le CORS
 const corsOptions = {
@@ -60,6 +61,8 @@ const securityMiddleware = [
   xss(),
   // Protection contre la pollution des paramètres HTTP
   hpp(),
+  // Filtrage d'adresse IP
+  ipFilter,
   // Rate limiting général
   limiter
 ];
