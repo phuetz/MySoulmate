@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ArrowUp, Smile, Image as ImageIcon, CirclePlus as PlusCircle, Send } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Audio } from 'expo-av';
+import { Smile, Image as ImageIcon, Send, Mic } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -17,6 +19,8 @@ export default function ChatScreen() {
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
   const [reactionPickerVisible, setReactionPickerVisible] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const recordingRef = useRef<Audio.Recording | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   const filteredMessages = messages.filter((m) =>
@@ -121,6 +125,68 @@ export default function ChatScreen() {
     setSelectedMessageId(null);
   };
 
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.7
+    });
+    if (!result.canceled && result.assets.length > 0) {
+      const imageMessage = {
+        id: Date.now().toString(),
+        image: result.assets[0].uri,
+        isUser: true,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, imageMessage]);
+      updateInteractions(1);
+    }
+  };
+
+  const startRecording = async () => {
+    const { status } = await Audio.requestPermissionsAsync();
+    if (status !== 'granted') return;
+    try {
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      recordingRef.current = recording;
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  };
+
+  const stopRecording = async () => {
+    const recording = recordingRef.current;
+    if (!recording) return;
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setIsRecording(false);
+      recordingRef.current = null;
+      if (uri) {
+        const audioMessage = {
+          id: Date.now().toString(),
+          audio: uri,
+          isUser: true,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, audioMessage]);
+        updateInteractions(1);
+      }
+    } catch (err) {
+      console.error('Failed to stop recording', err);
+    }
+  };
+
+  const playAudio = async (uri: string) => {
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      await sound.playAsync();
+    } catch (err) {
+      console.error('Failed to play audio', err);
+    }
+  };
+
   const renderMessageItem = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -137,9 +203,19 @@ export default function ChatScreen() {
           />
         )}
         <View style={[styles.messageContent, item.isUser ? styles.userContent : styles.companionContent]}>
-          <Text style={[styles.messageText, item.isUser ? styles.userText : styles.companionText]}>
-            {item.text}
-          </Text>
+          {item.image && (
+            <Image source={{ uri: item.image }} style={styles.attachmentImage} />
+          )}
+          {item.audio && (
+            <TouchableOpacity onPress={() => playAudio(item.audio)} style={styles.audioButton}>
+              <Text style={styles.audioButtonText}>Play Audio</Text>
+            </TouchableOpacity>
+          )}
+          {item.text !== undefined && (
+            <Text style={[styles.messageText, item.isUser ? styles.userText : styles.companionText]}>
+              {item.text}
+            </Text>
+          )}
           <Text style={styles.timestamp}>
             {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </Text>
@@ -209,8 +285,11 @@ export default function ChatScreen() {
 
       <View style={styles.inputContainer}>
         <View style={styles.inputRow}>
-          <TouchableOpacity style={styles.inputButton}>
-            <PlusCircle size={24} color="#9C6ADE" />
+          <TouchableOpacity style={styles.inputButton} onPress={pickImage}>
+            <ImageIcon size={24} color="#9C6ADE" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.inputButton} onPress={isRecording ? stopRecording : startRecording}>
+            <Mic size={24} color={isRecording ? '#FF6B8A' : '#9C6ADE'} />
           </TouchableOpacity>
           <View style={styles.textInputContainer}>
             <TextInput
@@ -223,9 +302,6 @@ export default function ChatScreen() {
             />
             <TouchableOpacity style={styles.inputAttachment} onPress={() => setEmojiPickerVisible(true)}>
               <Smile size={24} color="#9C6ADE" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.inputAttachment}>
-              <ImageIcon size={24} color="#9C6ADE" />
             </TouchableOpacity>
           </View>
           <TouchableOpacity 
@@ -445,5 +521,22 @@ const styles = StyleSheet.create({
   reaction: {
     marginRight: 4,
     fontSize: 16,
+  },
+  attachmentImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  audioButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#9C6ADE',
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  audioButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
   },
 });
