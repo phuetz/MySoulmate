@@ -13,6 +13,8 @@ const sequelize = new Sequelize({
 const UserModel = require('./userModel')(sequelize);
 const ProductModel = require('./productModel')(sequelize);
 const CategoryModel = require('./categoryModel')(sequelize);
+const GiftModel = require('./giftModel')(sequelize);
+const giftSeedData = require('../seed/gifts');
 
 // Définition des associations
 UserModel.hasMany(ProductModel, { 
@@ -51,6 +53,13 @@ const initializeDatabase = async () => {
     // Synchronisation des modèles avec la base de données
     await sequelize.sync({ alter: true });
     logger.info('Base de données synchronisée.');
+
+    // Seed gifts if table empty
+    const giftCount = await GiftModel.count();
+    if (giftCount === 0) {
+      await GiftModel.bulkCreate(giftSeedData);
+      logger.info('Gift data seeded');
+    }
     return true;
   } catch (error) {
     logger.error(`Erreur lors de l'initialisation de la base de données: ${error.message}`);
@@ -65,5 +74,6 @@ module.exports = {
   Sequelize,
   User: UserModel,
   Product: ProductModel,
-  Category: CategoryModel
+  Category: CategoryModel,
+  Gift: GiftModel
 };
