@@ -3,6 +3,7 @@
  */
 const { validationResult } = require('express-validator');
 const { Category, Product } = require('../models');
+const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 
 /**
@@ -12,11 +13,33 @@ const logger = require('../utils/logger');
  */
 exports.getAllCategories = async (req, res, next) => {
   try {
-    const categories = await Category.findAll({
-      order: [['name', 'ASC']]
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+    const sort = req.query.sort || 'name';
+    const order = req.query.order === 'desc' ? 'DESC' : 'ASC';
+
+    const where = {};
+    if (req.query.active !== undefined) {
+      where.isActive = req.query.active === 'true';
+    }
+    if (req.query.search) {
+      where.name = { [Op.like]: `%${req.query.search}%` };
+    }
+
+    const { count, rows } = await Category.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [[sort, order]]
     });
 
-    res.status(200).json(categories);
+    res.status(200).json({
+      categories: rows,
+      totalItems: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page
+    });
   } catch (error) {
     logger.error('Erreur lors de la récupération des catégories:', error);
     next(error);

@@ -9,8 +9,15 @@ export interface Category {
 }
 
 export const categoryService = {
-  async getCategories(): Promise<Category[]> {
-    const response = await api.get('/categories');
+  async getCategories(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    active?: boolean;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  } = {}): Promise<any> {
+    const response = await api.get('/categories', { params });
     return response.data;
   },
   
@@ -31,5 +38,4 @@ export const categoryService = {
   
   async deleteCategory(id: string): Promise<void> {
     await api.delete(`/categories/${id}`);
-  }
-};
+  }};
