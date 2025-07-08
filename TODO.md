@@ -14,7 +14,7 @@
 ### AI Companion Core
 
 - [x] Connect to a proper AI service (OpenAI, Anthropic, etc.) replacing the mock responses in `utils/aiUtils.ts`
-- [ ] Implement proper conversation memory/history
+- [x] Implement proper conversation memory/history
 - [ ] Add personality fine-tuning capabilities
 - [ ] Implement sentiment analysis for more contextual responses
 - [ ] Add relationship progression algorithm based on interactions

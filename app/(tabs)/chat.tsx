@@ -66,7 +66,12 @@ export default function ChatScreen() {
     // Simulate AI responding
     setIsTyping(true);
     setTimeout(async () => {
-      const response = await generateAIResponse(message, companion);
+      const history = messages
+        .slice(-5)
+        .filter(m => typeof m.text === 'string')
+        .map(m => ({ role: m.isUser ? 'user' : 'assistant', content: m.text }));
+
+      const response = await generateAIResponse(message, companion, history);
       const aiMessage = {
         id: (Date.now() + 1).toString(),
         text: response,

@@ -82,16 +82,31 @@ const fallbackResponse = (userMessage: string, companion: any) => {
   return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
 };
 
-export const generateAIResponse = async (userMessage: string, companion: any) => {
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export const generateAIResponse = async (
+  userMessage: string,
+  companion: any,
+  history: ConversationMessage[] = []
+) => {
   if (openai) {
     try {
       const personality = companion.personalityTraits.map((t: any) => t.name).join(', ');
+      const messages = [
+        {
+          role: 'system',
+          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. Respond conversationally.`
+        },
+        ...history,
+        { role: 'user', content: userMessage }
+      ];
+
       const completion = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. Respond conversationally.` },
-          { role: 'user', content: userMessage }
-        ]
+        messages
       });
       const aiMessage = completion.choices[0]?.message?.content;
       if (aiMessage) {
