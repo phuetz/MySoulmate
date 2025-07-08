@@ -134,5 +134,27 @@ exports.validateCategory = [
   
   body('isActive')
     .optional()
-    .isBoolean().withMessage('isActive doit être un booléen')
+    .isBoolean().withMessage('isActive doit être un booléen')];exports.validateGift = [
+  body('name')
+    .notEmpty().withMessage('Le nom du cadeau est requis')
+    .isLength({ min: 2, max: 100 }).withMessage('Le nom doit contenir entre 2 et 100 caracteres'),
+  body('description')
+    .optional()
+    .isString().withMessage('La description doit etre une chaine de caracteres'),
+  body('price')
+    .notEmpty().withMessage('Le prix est requis')
+    .isInt({ min: 0 }).withMessage('Le prix doit etre un entier positif'),
+  body('imageUrl')
+    .optional()
+    .isURL().withMessage("L'URL de l'image doit etre valide"),
+  body('premium')
+    .optional()
+    .isBoolean().withMessage('premium doit etre un booleen'),
+  body('category')
+    .optional()
+    .isIn(['common','rare','exclusive']).withMessage('Categorie invalide'),
+  body('effect')
+    .optional()
+    .isString().withMessage("L'effet doit etre une chaine de caracteres")
 ];
+
