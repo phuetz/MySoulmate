@@ -23,7 +23,7 @@
 
 - [x] Implement proper chat history storage and pagination
 - [x] Add message search functionality
-- [ ] Support media attachments (images, audio)
+- [x] Support media attachments (images, audio)
 - [x] Implement typing indicators when AI is generating a response
 - [x] Add message reactions and emoji support
 
