@@ -96,7 +96,7 @@
 - [ ] Enhance JWT security with refresh tokens
 - [ ] Implement rate limiting for auth endpoints
 - [ ] Add IP-based filtering for suspicious activities
-- [ ] Implement password policies and validation
+- [x] Implement password policies and validation
 - [ ] Add user session management
 
 ### Database

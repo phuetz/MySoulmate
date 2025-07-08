@@ -15,8 +15,11 @@ exports.validateRegister = [
   
   body('password')
     .notEmpty().withMessage('Le mot de passe est requis')
-    .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
+    .isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères')
+    .matches(/[A-Z]/).withMessage('Le mot de passe doit contenir au moins une majuscule')
+    .matches(/[a-z]/).withMessage('Le mot de passe doit contenir au moins une minuscule')
     .matches(/\d/).withMessage('Le mot de passe doit contenir au moins un chiffre')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Le mot de passe doit contenir au moins un caractère spécial')
 ];
 
 // Validation pour la connexion d'un utilisateur
@@ -42,7 +45,11 @@ exports.validateResetPassword = [
     .notEmpty().withMessage('Le token est requis'),
   body('password')
     .notEmpty().withMessage('Le mot de passe est requis')
-    .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
+    .isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères')
+    .matches(/[A-Z]/).withMessage('Le mot de passe doit contenir au moins une majuscule')
+    .matches(/[a-z]/).withMessage('Le mot de passe doit contenir au moins une minuscule')
+    .matches(/\d/).withMessage('Le mot de passe doit contenir au moins un chiffre')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Le mot de passe doit contenir au moins un caractère spécial')
 ];
 
 // Validation pour le rafraîchissement du token
@@ -69,8 +76,11 @@ exports.validateUpdateUser = [
   
   body('password')
     .optional()
-    .isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères')
-    .matches(/\d/).withMessage('Le mot de passe doit contenir au moins un chiffre'),
+    .isLength({ min: 8 }).withMessage('Le mot de passe doit contenir au moins 8 caractères')
+    .matches(/[A-Z]/).withMessage('Le mot de passe doit contenir au moins une majuscule')
+    .matches(/[a-z]/).withMessage('Le mot de passe doit contenir au moins une minuscule')
+    .matches(/\d/).withMessage('Le mot de passe doit contenir au moins un chiffre')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/).withMessage('Le mot de passe doit contenir au moins un caractère spécial'),
   
   body('role')
     .optional()
