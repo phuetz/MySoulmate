@@ -4,8 +4,8 @@
 
 ### Authentication
 
-- [ ] Connect authentication to backend API
-- [ ] Add password reset functionality
+- [x] Connect authentication to backend API
+- [x] Add password reset functionality
 - [x] Implement email verification
 - [ ] Add social media login options
 - [x] Implement token refresh mechanism
@@ -31,7 +31,7 @@
 
 - [x] Implement real voice recording and playback
 - [ ] Connect to a Text-to-Speech API for AI voice responses
-- [ ] Add speech recognition for voice-to-text
+- [x] Add speech recognition for voice-to-text
 - [ ] Implement voice emotion detection
 - [ ] Support different voice models/accents
 
@@ -93,9 +93,9 @@
 
 ### Authentication & Security
 
-- [ ] Enhance JWT security with refresh tokens
-- [ ] Implement rate limiting for auth endpoints
-- [ ] Add IP-based filtering for suspicious activities
+- [x] Enhance JWT security with refresh tokens
+- [x] Implement rate limiting for auth endpoints
+- [x] Add IP-based filtering for suspicious activities
 - [x] Implement password policies and validation
 - [ ] Add user session management
 
