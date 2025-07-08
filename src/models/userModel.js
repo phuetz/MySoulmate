@@ -63,6 +63,14 @@ module.exports = (sequelize) => {
     refreshTokenExpires: {
       type: DataTypes.DATE,
       allowNull: true
+    },
+    emailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    emailVerificationToken: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     timestamps: true,

@@ -77,7 +77,8 @@ describe('Auth Routes', () => {
       await User.create({
         name: 'Login Test',
         email: 'login@example.com',
-        password: 'loginpass123'
+        password: 'loginpass123',
+        emailVerified: true
       });
     });
 
@@ -196,7 +197,8 @@ describe('Auth Routes', () => {
       await User.create({
         name: 'Reset User',
         email: 'reset@example.com',
-        password: hashedPassword
+        password: hashedPassword,
+        emailVerified: true
       });
     });
 
@@ -225,6 +227,30 @@ describe('Auth Routes', () => {
 
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('token');
+    });
+  });
+
+  describe('Email verification flow', () => {
+    let verificationToken;
+
+    it('devrait enregistrer un utilisateur et renvoyer un token de vérification', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/register')
+        .send({ name: 'Verify', email: 'verify@example.com', password: 'pass1234' });
+
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toHaveProperty('emailVerificationToken');
+      verificationToken = res.body.emailVerificationToken;
+    });
+
+    it('devrait vérifier l\'email avec un token valide', async () => {
+      const res = await request(app)
+        .post('/api/v1/auth/verify-email')
+        .send({ token: verificationToken });
+
+      expect(res.statusCode).toEqual(200);
+      const user = await User.findOne({ where: { email: 'verify@example.com' } });
+      expect(user.emailVerified).toBe(true);
     });
   });
 });
