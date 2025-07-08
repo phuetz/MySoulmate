@@ -29,7 +29,7 @@
 
 ### Voice Interactions
 
-- [ ] Implement real voice recording and playback
+- [x] Implement real voice recording and playback
 - [ ] Connect to a Text-to-Speech API for AI voice responses
 - [ ] Add speech recognition for voice-to-text
 - [ ] Implement voice emotion detection
