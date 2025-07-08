@@ -1,11 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import ThemeContext from '@/context/ThemeContext';
 
 interface ErrorBoundaryState {
   hasError: boolean;
 }
 
 export class ErrorBoundary extends React.Component<React.PropsWithChildren<{}>, ErrorBoundaryState> {
+  static contextType = ThemeContext;
+  declare context: React.ContextType<typeof ThemeContext>;
+
   constructor(props: React.PropsWithChildren<{}>) {
     super(props);
     this.state = { hasError: false };
@@ -24,6 +28,8 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren<{}>, 
   };
 
   render() {
+    const { colors } = this.context;
+    const styles = createStyles(colors);
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
@@ -39,31 +45,38 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren<{}>, 
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#F8F9FA',
-  },
-  title: {
-    fontSize: 18,
-    marginBottom: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: '#FF6B8A',
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+interface ThemeColors {
+  background: string;
+  text: string;
+  primary: string;
+}
+
+const createStyles = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 18,
+      marginBottom: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    button: {
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+    },
+    buttonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });
 
 export default ErrorBoundary;
