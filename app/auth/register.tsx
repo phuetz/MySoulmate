@@ -29,7 +29,14 @@ export default function RegisterScreen() {
     if (!name) newErrors.name = "Name is required";
     if (!email) newErrors.email = "Email is required";
     if (!password) newErrors.password = "Password is required";
-    if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    if (password.length < 8 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/\d/.test(password) ||
+        !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      newErrors.password =
+        "Password must be at least 8 characters and include uppercase, lowercase, number and special character";
+    }
     if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match";
     
     setErrors(newErrors);

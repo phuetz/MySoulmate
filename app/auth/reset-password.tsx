@@ -16,6 +16,14 @@ export default function ResetPasswordScreen() {
     const newErrors: {token?: string; password?: string; confirmPassword?: string} = {};
     if (!token) newErrors.token = 'Token is required';
     if (!password) newErrors.password = 'Password is required';
+    if (password.length < 8 ||
+        !/[A-Z]/.test(password) ||
+        !/[a-z]/.test(password) ||
+        !/\d/.test(password) ||
+        !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      newErrors.password =
+        'Password must be at least 8 characters and include uppercase, lowercase, number and special character';
+    }
     if (password !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

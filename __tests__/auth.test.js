@@ -31,7 +31,7 @@ describe('Auth Routes', () => {
         .send({
           name: 'Test User',
           email: 'test@example.com',
-          password: 'password123'
+          password: 'Password123!'
         });
       
       expect(res.statusCode).toEqual(201);
@@ -49,7 +49,7 @@ describe('Auth Routes', () => {
         .send({
           name: 'Another User',
           email: 'test@example.com',
-          password: 'password456'
+          password: 'Password456!'
         });
       
       expect(res.statusCode).toEqual(400);
@@ -77,7 +77,7 @@ describe('Auth Routes', () => {
       await User.create({
         name: 'Login Test',
         email: 'login@example.com',
-        password: 'loginpass123',
+        password: 'Loginpass123!',
         emailVerified: true
       });
     });
@@ -87,7 +87,7 @@ describe('Auth Routes', () => {
         .post('/api/v1/auth/login')
         .send({
           email: 'login@example.com',
-          password: 'loginpass123'
+          password: 'Loginpass123!'
         });
 
       expect(res.statusCode).toEqual(200);
@@ -104,7 +104,7 @@ describe('Auth Routes', () => {
         .post('/api/v1/auth/login')
         .send({
           email: 'wrong@example.com',
-          password: 'loginpass123'
+          password: 'Loginpass123!'
         });
       
       expect(res.statusCode).toEqual(401);
@@ -133,7 +133,7 @@ describe('Auth Routes', () => {
         .post('/api/v1/auth/login')
         .send({
           email: 'login@example.com',
-          password: 'loginpass123'
+          password: 'Loginpass123!'
         });
       
       token = res.body.token;
@@ -215,7 +215,7 @@ describe('Auth Routes', () => {
     it('devrait réinitialiser le mot de passe avec un token valide', async () => {
       const res = await request(app)
         .post('/api/v1/auth/reset-password')
-        .send({ token: resetToken, password: 'newpassword123' });
+        .send({ token: resetToken, password: 'Newpassword123!' });
 
       expect(res.statusCode).toEqual(200);
     });
@@ -223,7 +223,7 @@ describe('Auth Routes', () => {
     it('devrait se connecter avec le nouveau mot de passe', async () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
-        .send({ email: 'reset@example.com', password: 'newpassword123' });
+        .send({ email: 'reset@example.com', password: 'Newpassword123!' });
 
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('token');
@@ -236,7 +236,7 @@ describe('Auth Routes', () => {
     it('devrait enregistrer un utilisateur et renvoyer un token de vérification', async () => {
       const res = await request(app)
         .post('/api/v1/auth/register')
-        .send({ name: 'Verify', email: 'verify@example.com', password: 'pass1234' });
+        .send({ name: 'Verify', email: 'verify@example.com', password: 'Pass1234!' });
 
       expect(res.statusCode).toEqual(201);
       expect(res.body).toHaveProperty('emailVerificationToken');
@@ -252,5 +252,4 @@ describe('Auth Routes', () => {
       const user = await User.findOne({ where: { email: 'verify@example.com' } });
       expect(user.emailVerified).toBe(true);
     });
-  });
-});
+  });});
