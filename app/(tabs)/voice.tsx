@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, Platform } from 'react-native';
+import { Audio } from 'expo-av';
 import { Mic, MicOff, CirclePause as PauseCircle, MessageCircle, Heart } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
@@ -12,6 +13,8 @@ export default function VoiceScreen() {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [voiceResponses, setVoiceResponses] = useState([]);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recordings, setRecordings] = useState<string[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -55,20 +58,61 @@ export default function VoiceScreen() {
     };
   }, [isRecording, timeElapsed]);
 
-  const toggleRecording = () => {
-    if (!isPremium && !isRecording) {
-      // Allow a short free preview before showing premium modal
+  const startRecording = async () => {
+    setTimeElapsed(0);
+    setVoiceResponses([]);
+    const { status } = await Audio.requestPermissionsAsync();
+    if (status !== 'granted') return;
+    try {
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      setRecording(recording);
       setIsRecording(true);
-      timeoutRef.current = setTimeout(() => {
-        setIsRecording(false);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      if (uri) setRecordings(prev => [...prev, uri]);
+    } catch (err) {
+      console.error('Failed to stop recording', err);
+    }
+    setRecording(null);
+    setIsRecording(false);
+  };
+
+  const playRecording = async (uri: string) => {
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      await sound.playAsync();
+    } catch (err) {
+      console.error('Failed to play audio', err);
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      await stopRecording();
+      return;
+    }
+
+    if (!isPremium) {
+      await startRecording();
+      timeoutRef.current = setTimeout(async () => {
+        await stopRecording();
         setShowPremiumModal(true);
       }, 15000); // 15 seconds preview
     } else {
-      setIsRecording(!isRecording);
-      if (!isRecording) {
-        setTimeElapsed(0);
-        setVoiceResponses([]);
-      }
+      await startRecording();
     }
   };
 
@@ -115,7 +159,17 @@ export default function VoiceScreen() {
           </View>
         ))}
       </View>
-      
+
+      {recordings.length > 0 && (
+        <View style={styles.recordingsContainer}>
+          {recordings.map((uri, index) => (
+            <TouchableOpacity key={index} style={styles.recordingItem} onPress={() => playRecording(uri)}>
+              <Text style={styles.recordingText}>Recording {index + 1}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       <View style={styles.controlsContainer}>
         <TouchableOpacity style={styles.controlButton} onPress={() => router.push('/chat')}>
           <MessageCircle size={24} color="#9C6ADE" />
@@ -252,6 +306,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333333',
     lineHeight: 20,
+  },
+  recordingsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  recordingItem: {
+    backgroundColor: '#ECECEC',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  recordingText: {
+    color: '#333333',
   },
   controlsContainer: {
     flexDirection: 'row',
