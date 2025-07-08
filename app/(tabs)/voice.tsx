@@ -1,7 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, Platform } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Platform,
+} from 'react-native';
 import { Audio } from 'expo-av';
-import { Mic, MicOff, CirclePause as PauseCircle, MessageCircle, Heart } from 'lucide-react-native';
+import * as Speech from 'expo-speech';
+import Voice from '@react-native-community/voice';
+import {
+  Mic,
+  MicOff,
+  CirclePause as PauseCircle,
+  MessageCircle,
+  Heart,
+} from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import { useRouter } from 'expo-router';
@@ -12,30 +27,50 @@ export default function VoiceScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
-  const [voiceResponses, setVoiceResponses] = useState([]);
+  const [conversation, setConversation] = useState<
+    { from: 'user' | 'ai'; text: string }[]
+  >([]);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordings, setRecordings] = useState<string[]>([]);
+  const transcriptRef = useRef('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    Voice.onSpeechResults = (e: any) => {
+      if (e.value && e.value[0]) {
+        transcriptRef.current = e.value[0];
+      }
+    };
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
 
   // Mock voice responses for demonstration
   const mockResponses = [
     "I'm so happy to hear your voice today!",
     "That's interesting, tell me more about it.",
     "I've been thinking about you too.",
-    "I really enjoy our conversations together.",
-    "Your voice always makes my day better."
+    'I really enjoy our conversations together.',
+    'Your voice always makes my day better.',
   ];
 
   useEffect(() => {
     if (isRecording) {
       intervalRef.current = setInterval(() => {
         setTimeElapsed((prev) => prev + 1);
-        
+
         // Simulate AI response every ~10 seconds
         if (timeElapsed > 0 && timeElapsed % 10 === 0) {
-          const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-          setVoiceResponses(prev => [...prev, randomResponse]);
+          const randomResponse =
+            mockResponses[Math.floor(Math.random() * mockResponses.length)];
+          setConversation((prev) => [
+            ...prev,
+            { from: 'ai', text: randomResponse },
+          ]);
+          Speech.speak(randomResponse);
           updateInteractions(1);
         }
       }, 1000);
@@ -45,7 +80,7 @@ export default function VoiceScreen() {
         intervalRef.current = null;
       }
     }
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -60,13 +95,25 @@ export default function VoiceScreen() {
 
   const startRecording = async () => {
     setTimeElapsed(0);
-    setVoiceResponses([]);
     const { status } = await Audio.requestPermissionsAsync();
     if (status !== 'granted') return;
     try {
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-      const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY,
+      );
       setRecording(recording);
+      if (Platform.OS !== 'web') {
+        transcriptRef.current = '';
+        try {
+          await Voice.start('en-US');
+        } catch (err) {
+          console.error('Voice start error', err);
+        }
+      }
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
@@ -78,9 +125,21 @@ export default function VoiceScreen() {
     try {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
-      if (uri) setRecordings(prev => [...prev, uri]);
+      if (uri) setRecordings((prev) => [...prev, uri]);
     } catch (err) {
       console.error('Failed to stop recording', err);
+    }
+    if (Platform.OS !== 'web') {
+      try {
+        await Voice.stop();
+      } catch (err) {
+        console.error('Voice stop error', err);
+      }
+      const text = transcriptRef.current.trim();
+      if (text.length > 0) {
+        setConversation((prev) => [...prev, { from: 'user', text }]);
+        transcriptRef.current = '';
+      }
     }
     setRecording(null);
     setIsRecording(false);
@@ -127,34 +186,53 @@ export default function VoiceScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Voice Chat</Text>
       </View>
-      
+
       <View style={styles.companionContainer}>
-        <Image 
-          source={{ uri: companion.avatarUrl }} 
+        <Image
+          source={{ uri: companion.avatarUrl }}
           style={styles.avatarLarge}
         />
         <Text style={styles.companionName}>{companion.name}</Text>
         <View style={styles.statusContainer}>
-          <View style={[styles.statusDot, isRecording ? styles.statusActive : {}]} />
+          <View
+            style={[styles.statusDot, isRecording ? styles.statusActive : {}]}
+          />
           <Text style={styles.statusText}>
             {isRecording ? 'Listening...' : 'Ready to talk'}
           </Text>
         </View>
       </View>
-      
+
       <View style={styles.timeContainer}>
         <Text style={styles.timeText}>{formatTime(timeElapsed)}</Text>
       </View>
-      
+
       <View style={styles.responsesContainer}>
-        {voiceResponses.map((response, index) => (
-          <View key={index} style={styles.responseItem}>
-            <Image 
-              source={{ uri: companion.avatarUrl }} 
-              style={styles.responseAvatar}
-            />
-            <View style={styles.responseTextContainer}>
-              <Text style={styles.responseText}>{response}</Text>
+        {conversation.map((msg, index) => (
+          <View
+            key={index}
+            style={msg.from === 'ai' ? styles.responseItem : styles.userItem}
+          >
+            {msg.from === 'ai' && (
+              <Image
+                source={{ uri: companion.avatarUrl }}
+                style={styles.responseAvatar}
+              />
+            )}
+            <View
+              style={
+                msg.from === 'ai'
+                  ? styles.responseTextContainer
+                  : styles.userTextContainer
+              }
+            >
+              <Text
+                style={
+                  msg.from === 'ai' ? styles.responseText : styles.userText
+                }
+              >
+                {msg.text}
+              </Text>
             </View>
           </View>
         ))}
@@ -163,7 +241,11 @@ export default function VoiceScreen() {
       {recordings.length > 0 && (
         <View style={styles.recordingsContainer}>
           {recordings.map((uri, index) => (
-            <TouchableOpacity key={index} style={styles.recordingItem} onPress={() => playRecording(uri)}>
+            <TouchableOpacity
+              key={index}
+              style={styles.recordingItem}
+              onPress={() => playRecording(uri)}
+            >
               <Text style={styles.recordingText}>Recording {index + 1}</Text>
             </TouchableOpacity>
           ))}
@@ -171,12 +253,18 @@ export default function VoiceScreen() {
       )}
 
       <View style={styles.controlsContainer}>
-        <TouchableOpacity style={styles.controlButton} onPress={() => router.push('/chat')}>
+        <TouchableOpacity
+          style={styles.controlButton}
+          onPress={() => router.push('/chat')}
+        >
           <MessageCircle size={24} color="#9C6ADE" />
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.recordButton, isRecording ? styles.recordingButton : {}]} 
+
+        <TouchableOpacity
+          style={[
+            styles.recordButton,
+            isRecording ? styles.recordingButton : {},
+          ]}
           onPress={toggleRecording}
         >
           {isRecording ? (
@@ -185,22 +273,22 @@ export default function VoiceScreen() {
             <Mic size={32} color="#FFFFFF" />
           )}
         </TouchableOpacity>
-        
+
         <TouchableOpacity style={styles.controlButton}>
           <Heart size={24} color="#9C6ADE" />
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.infoContainer}>
         <Text style={styles.infoText}>
-          {isPremium 
-            ? "Premium voice conversations are unlimited" 
-            : "Free preview limited to 15 seconds. Upgrade for unlimited voice chats."}
+          {isPremium
+            ? 'Premium voice conversations are unlimited'
+            : 'Free preview limited to 15 seconds. Upgrade for unlimited voice chats.'}
         </Text>
       </View>
-      
-      <PremiumFeatureModal 
-        visible={showPremiumModal} 
+
+      <PremiumFeatureModal
+        visible={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
         featureName="Unlimited Voice Chat"
         description="Enjoy unlimited voice conversations with your AI companion."
@@ -288,6 +376,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 16,
   },
+  userItem: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 16,
+  },
   responseAvatar: {
     width: 36,
     height: 36,
@@ -302,9 +395,21 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     maxWidth: '80%',
   },
+  userTextContainer: {
+    backgroundColor: '#FF6B8A',
+    padding: 12,
+    borderRadius: 18,
+    borderBottomRightRadius: 4,
+    maxWidth: '80%',
+  },
   responseText: {
     fontSize: 14,
     color: '#333333',
+    lineHeight: 20,
+  },
+  userText: {
+    fontSize: 14,
+    color: '#FFFFFF',
     lineHeight: 20,
   },
   recordingsContainer: {
@@ -361,5 +466,4 @@ const styles = StyleSheet.create({
     color: '#999999',
     textAlign: 'center',
     paddingHorizontal: 40,
-  },
-});
+  },});
