@@ -74,6 +74,16 @@ module.exports = (sequelize) => {
     }
   }, {
     timestamps: true,
+    indexes: [
+      {
+        name: 'users_email_idx',
+        fields: ['email']
+      },
+      {
+        name: 'users_lastLogin_idx',
+        fields: ['lastLogin']
+      }
+    ],
     hooks: {
       // Hacher le mot de passe avant de l'enregistrer
       beforeCreate: async (user) => {

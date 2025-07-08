@@ -37,6 +37,17 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true
     }
+  }, {
+    indexes: [
+      {
+        name: 'gifts_category_idx',
+        fields: ['category']
+      },
+      {
+        name: 'gifts_price_idx',
+        fields: ['price']
+      }
+    ]
   });
 
   return Gift;
