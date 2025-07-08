@@ -9,7 +9,8 @@ const {
   validateLogin,
   validateForgotPassword,
   validateResetPassword,
-  validateRefreshToken
+  validateRefreshToken,
+  validateVerifyEmail
 } = require('../middleware/validationMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 const { authLimiter } = require('../middleware/securityMiddleware');
@@ -82,6 +83,9 @@ router.post('/forgot-password', validateForgotPassword, authController.forgotPas
 
 // Réinitialisation du mot de passe
 router.post('/reset-password', validateResetPassword, authController.resetPassword);
+
+// Vérification de l'adresse email
+router.post('/verify-email', validateVerifyEmail, authController.verifyEmail);
 
 /**
  * @swagger

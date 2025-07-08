@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const { User, Sequelize } = require('../models');
 const logger = require('../utils/logger');
+const { sendVerificationEmail } = require('../utils/emailService');
 const crypto = require('crypto');
 const { Op } = Sequelize;
 
@@ -23,6 +24,8 @@ exports.register = async (req, res, next) => {
 
     const { name, email, password } = req.body;
 
+    const emailVerificationToken = crypto.randomBytes(20).toString('hex');
+
     // Vérifier si l'utilisateur existe déjà
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
@@ -33,7 +36,8 @@ exports.register = async (req, res, next) => {
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      emailVerificationToken
     });
 
     // Générer un token JWT
@@ -48,7 +52,9 @@ exports.register = async (req, res, next) => {
       refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 jours
     });
 
-    res.status(201).json({
+    sendVerificationEmail(user.email, emailVerificationToken);
+
+    const responseData = {
       message: 'Utilisateur enregistré avec succès',
       token,
       refreshToken,
@@ -58,7 +64,13 @@ exports.register = async (req, res, next) => {
         email: user.email,
         role: user.role
       }
-    });
+    };
+
+    if (process.env.NODE_ENV === 'test') {
+      responseData.emailVerificationToken = emailVerificationToken;
+    }
+
+    res.status(201).json(responseData);
   } catch (error) {
     logger.error('Erreur lors de l\'inscription:', error);
     next(error);
@@ -89,6 +101,10 @@ exports.login = async (req, res, next) => {
     // Vérifier si le compte est actif
     if (!user.isActive) {
       return res.status(401).json({ message: 'Ce compte a été désactivé' });
+    }
+
+    if (!user.emailVerified) {
+      return res.status(401).json({ message: 'Veuillez vérifier votre email' });
     }
 
     // Vérifier le mot de passe
@@ -266,6 +282,33 @@ exports.refreshToken = async (req, res, next) => {
     res.status(200).json({ token, refreshToken: newRefreshToken });
   } catch (error) {
     logger.error('Erreur lors du rafraîchissement du token:', error);
+    next(error);
+  }
+}; 
+
+/**
+ * @desc    Vérifier l'adresse email d'un utilisateur
+ * @route   POST /api/auth/verify-email
+ * @access  Public
+ */
+exports.verifyEmail = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { token } = req.body;
+
+    const user = await User.findOne({ where: { emailVerificationToken: token } });
+    if (!user) {
+      return res.status(400).json({ message: 'Token invalide ou expiré' });
+    }
+
+    await user.update({ emailVerified: true, emailVerificationToken: null });
+    res.status(200).json({ message: 'Email vérifié avec succès' });
+  } catch (error) {
+    logger.error("Erreur lors de la vérification de l'email:", error);
     next(error);
   }
 };

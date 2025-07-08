@@ -51,6 +51,12 @@ exports.validateRefreshToken = [
     .notEmpty().withMessage('Le refresh token est requis')
 ];
 
+// Validation pour la vérification d'email
+exports.validateVerifyEmail = [
+  body('token')
+    .notEmpty().withMessage('Le token est requis')
+];
+
 // Validation pour la mise à jour d'un utilisateur
 exports.validateUpdateUser = [
   body('name')
