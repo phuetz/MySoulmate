@@ -7,6 +7,7 @@ const rateLimit = require('express-rate-limit');
 const swaggerSetup = require('./utils/swagger');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 const logger = require('./utils/logger');
+const ipFilter = require('./middleware/ipFilterMiddleware');
 
 // Routes versionnées
 const v1Routes = require('./routes/v1');
@@ -20,6 +21,7 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(ipFilter);
 
 // Logging des requêtes HTTP
 app.use(morgan('dev', {
