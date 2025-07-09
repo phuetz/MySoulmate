@@ -11,6 +11,7 @@ const ipFilter = require('./middleware/ipFilterMiddleware');
 
 // Routes versionnées
 const v1Routes = require('./routes/v1');
+const versionedRoutes = require('./routes/versionedRoutes');
 
 // Initialisation de l'application Express
 const app = express();
@@ -54,7 +55,10 @@ app.get('/', (req, res) => {
   });
 });
 
-// Routes versionnées - v1
+// Routes versionnées dynamiques
+app.use('/api', versionedRoutes);
+
+// Routes spécifiques à la v1 (compatibilité directe)
 app.use('/api/v1', v1Routes);
 
 // Pour la rétrocompatibilité (optionnel) - rediriger les anciennes routes vers v1
@@ -69,5 +73,4 @@ app.use(notFound);
 
 // Middleware de gestion des erreurs
 app.use(errorHandler);
-
 module.exports = app;
