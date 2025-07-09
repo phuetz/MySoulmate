@@ -13,6 +13,7 @@ interface CompanionData {
   messages: number;
   gifts: number;
   days: number;
+  relationshipStatus: 'Acquaintance' | 'Friend' | 'Close Friend' | 'Romantic';
   nsfwEnabled: boolean;
   notificationsEnabled: boolean;
   purchasedGifts?: string[];
@@ -60,6 +61,7 @@ const defaultCompanion: CompanionData = {
   messages: 37,
   gifts: 2,
   days: 5,
+  relationshipStatus: 'Friend',
   nsfwEnabled: false,
   notificationsEnabled: true,
   purchasedGifts: ['1', '2'],
@@ -98,15 +100,28 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setCompanion(data);
   };
 
+  const getRelationshipStatus = (interactions: number) => {
+    if (interactions > 50) return 'Romantic';
+    if (interactions > 30) return 'Close Friend';
+    if (interactions > 10) return 'Friend';
+    return 'Acquaintance';
+  };
+
   const updateInteractions = (count: number) => {
-    setCompanion(prev => ({
-      ...prev,
-      interactions: (prev.interactions || 0) + count,
-      messages: (prev.messages || 0) + (count > 0 ? 1 : 0),
-      arExperiences: (prev.arExperiences || 0) + (count === 5 ? 1 : 0), // Increment AR experiences for AR interactions
-      xp: (prev.xp || 0) + (count * 10), // Gain XP for interactions
-      level: Math.floor(((prev.xp || 0) + (count * 10)) / 100) + 1 // Level up every 100 XP
-    }));
+    setCompanion(prev => {
+      const newInteractions = (prev.interactions || 0) + count;
+      const newXp = (prev.xp || 0) + count * 10;
+      const updated = {
+        ...prev,
+        interactions: newInteractions,
+        messages: (prev.messages || 0) + (count > 0 ? 1 : 0),
+        arExperiences: (prev.arExperiences || 0) + (count === 5 ? 1 : 0),
+        xp: newXp,
+        level: Math.floor(newXp / 100) + 1,
+        relationshipStatus: getRelationshipStatus(newInteractions)
+      } as CompanionData;
+      return updated;
+    });
   };
 
   useEffect(() => {
