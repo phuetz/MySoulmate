@@ -43,6 +43,7 @@
     "openai": "^5.8.2",
     "react-native-chart-kit": "^6.12.0",
     "react-native-svg": "^14.1.0",
+    "sentiment": "^5.0.2",
     "sequelize": "^6.31.1",
     "sqlite3": "^5.1.6",
     "swagger-jsdoc": "^6.2.8",
