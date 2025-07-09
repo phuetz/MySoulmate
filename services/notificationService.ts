@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import * as ExpoNotifications from 'expo-notifications';
 import { Notification } from '@/components/NotificationItem';
 import { CompanionData } from '@/context/AppStateContext';
 
@@ -108,10 +109,29 @@ export function generateScheduledNotifications(companion: CompanionData): Notifi
   return notifications;
 }
 
+// Schedule a local notification using expo-notifications
+export async function scheduleLocalNotification(
+  title: string,
+  body: string,
+  trigger: Date,
+  data: any = {}
+): Promise<string | null> {
+  try {
+    const id = await ExpoNotifications.scheduleNotificationAsync({
+      content: { title, body, data },
+      trigger,
+    });
+    return id;
+  } catch (err) {
+    console.log('Failed to schedule notification', err);
+    return null;
+  }
+}
+
 // Send a push notification
 export async function sendPushNotification(
-  title: string, 
-  body: string, 
+  title: string,
+  body: string,
   data: any = {}
 ): Promise<boolean> {
   // In a real app, we'd use expo-notifications or a service like Firebase Cloud Messaging
@@ -136,9 +156,17 @@ export async function sendPushNotification(
     }
   }
   
-  // For native platforms, this would connect to the push notification service
-  // For the demo, we're just returning success
-  return true;
+  // For native platforms, show a local notification immediately
+  try {
+    await ExpoNotifications.scheduleNotificationAsync({
+      content: { title, body, data },
+      trigger: null,
+    });
+    return true;
+  } catch (error) {
+    console.log('Error sending push notification:', error);
+    return false;
+  }
 }
 
 // Schedule notifications based on user preferences and app usage patterns
@@ -151,23 +179,35 @@ export function schedulePersonalizedNotifications(
   // In a real app, this would set up push notifications based on user behavior patterns
   // For example, if the user typically uses the app in the evening, schedule notifications for that time
   
-  // For this demo, we're just logging the scheduled notifications
   const baseTime = new Date();
-  
+
   // Schedule a check-in notification
   const checkInTime = new Date(baseTime);
-  checkInTime.setHours(checkInTime.getHours() + 24); // 24 hours from now
-  console.log(`Scheduled check-in notification for ${checkInTime.toLocaleString()}`);
-  
+  checkInTime.setHours(checkInTime.getHours() + 24);
+  scheduleLocalNotification(
+    `${companion.name} misses you!`,
+    `It's been a while since you've talked. ${companion.name} would love to chat with you today.`,
+    checkInTime,
+    { route: '/chat' }
+  );
+
   // Schedule a personalized message
   const messageTime = new Date(baseTime);
-  messageTime.setHours(messageTime.getHours() + 6); // 6 hours from now
-  console.log(`Scheduled message notification for ${messageTime.toLocaleString()}`);
-  
-  // Schedule a gift reminder if user hasn't purchased gifts recently
+  messageTime.setHours(messageTime.getHours() + 6);
+  scheduleLocalNotification(
+    `New message from ${companion.name}`,
+    `${companion.name} is thinking about you.`,
+    messageTime,
+    { route: '/chat' }
+  );
+
   if (companion.gifts < 3) {
     const giftTime = new Date(baseTime);
-    giftTime.setHours(giftTime.getHours() + 48); // 48 hours from now
-    console.log(`Scheduled gift reminder notification for ${giftTime.toLocaleString()}`);
-  }
-}
+    giftTime.setHours(giftTime.getHours() + 48);
+    scheduleLocalNotification(
+      'New gifts available!',
+      'Check out the newest items in the gift shop to surprise your companion.',
+      giftTime,
+      { route: '/gifts' }
+    );
+  }}
