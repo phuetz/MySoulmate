@@ -17,7 +17,7 @@
 - [x] Implement proper conversation memory/history
 - [ ] Add personality fine-tuning capabilities
 - [x] Implement sentiment analysis for more contextual responses
-- [ ] Add relationship progression algorithm based on interactions
+- [x] Add relationship progression algorithm based on interactions
 
 ### Chat Interface
 

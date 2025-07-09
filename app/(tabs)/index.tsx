@@ -15,11 +15,6 @@ export default function HomeScreen() {
     setShowAgeVerification(false);
   };
 
-  const calculateRelationshipLevel = () => {
-    return companion.interactions > 50 ? 'Romantic' : 
-           companion.interactions > 30 ? 'Close Friend' : 
-           companion.interactions > 10 ? 'Friend' : 'Acquaintance';
-  };
 
   return (
     <View style={styles.container}>
@@ -37,7 +32,7 @@ export default function HomeScreen() {
             <Text style={styles.name}>{companion.name}</Text>
             <View style={styles.relationshipContainer}>
               <Text style={styles.relationshipText}>
-                {calculateRelationshipLevel()}
+                {companion.relationshipStatus}
               </Text>
               <Heart size={16} color="#FF6B8A" style={styles.relationshipIcon} />
             </View>
