@@ -171,6 +171,10 @@ npm run dev
 - API: `http://localhost:3000`
 - Documentation Swagger: `http://localhost:3000/api-docs`
 
+3. **Configurer l'URL de l'API côté application**
+   - Par défaut, l'application mobile pointe vers `http://localhost:3000/api/v1`.
+   - Vous pouvez changer cette URL en modifiant la valeur `expo.extra.apiUrl` dans `app.json` ou via la variable d'environnement `EXPO_PUBLIC_API_URL`.
+
 ## 📁 Structure du projet
 
 ```
