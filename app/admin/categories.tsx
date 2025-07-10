@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
-import { Plus, Search, Edit, Trash2, ShoppingBag } from 'lucide-react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { Plus, Search } from 'lucide-react-native';
+import CategoryList from '@/components/CategoryList';
 import { useRouter } from 'expo-router';
 import { categoryService, Category } from '@/services/categoryService';
 
@@ -71,47 +72,6 @@ export default function CategoriesScreen() {
     );
   };
 
-  const renderCategoryItem = ({ item }: { item: Category }) => (
-    <View style={styles.categoryItem}>
-      <View style={styles.categoryIcon}>
-        <ShoppingBag size={20} color="#FFFFFF" />
-      </View>
-      
-      <View style={styles.categoryInfo}>
-        <Text style={styles.categoryName}>{item.name}</Text>
-        {item.description && (
-          <Text style={styles.categoryDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
-        
-        <View style={[
-          styles.statusBadge,
-          item.isActive ? styles.activeBadge : styles.inactiveBadge
-        ]}>
-          <Text style={styles.statusText}>
-            {item.isActive ? 'Active' : 'Inactive'}
-          </Text>
-        </View>
-      </View>
-      
-      <View style={styles.categoryActions}>
-        <TouchableOpacity 
-          style={styles.editButton} 
-          onPress={() => handleEdit(item.id)}
-        >
-          <Edit size={16} color="#4CAF50" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.deleteButton}
-          onPress={() => handleDelete(item.id, item.name)}
-        >
-          <Trash2 size={16} color="#FF3B30" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
 
   return (
     <View style={styles.container}>
@@ -141,13 +101,12 @@ export default function CategoriesScreen() {
           <Text style={styles.loadingText}>Loading categories...</Text>
         </View>
       ) : filteredCategories.length > 0 ? (
-        <FlatList
-          data={filteredCategories}
-          renderItem={renderCategoryItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.categoryList}
-          onRefresh={handleRefresh}
+        <CategoryList
+          categories={filteredCategories}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
           refreshing={refreshing}
+          onRefresh={handleRefresh}
         />
       ) : (
         <View style={styles.emptyContainer}>
@@ -213,83 +172,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 14,
     color: '#666666',
-  },
-  categoryList: {
-    padding: 16,
-    paddingTop: 8,
-  },
-  categoryItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  categoryIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#9C6ADE',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  categoryInfo: {
-    flex: 1,
-  },
-  categoryName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    marginBottom: 4,
-  },
-  categoryDescription: {
-    fontSize: 14,
-    color: '#666666',
-    marginBottom: 8,
-  },
-  statusBadge: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-  },
-  activeBadge: {
-    backgroundColor: '#E8F5E9',
-  },
-  inactiveBadge: {
-    backgroundColor: '#FFEBEE',
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#333333',
-  },
-  categoryActions: {
-    flexDirection: 'row',
-  },
-  editButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  deleteButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   emptyContainer: {
     flex: 1,
