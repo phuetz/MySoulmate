@@ -14,6 +14,7 @@ const UserModel = require('./userModel')(sequelize);
 const ProductModel = require('./productModel')(sequelize);
 const CategoryModel = require('./categoryModel')(sequelize);
 const GiftModel = require('./giftModel')(sequelize);
+const SessionModel = require('./sessionModel')(sequelize);
 const giftSeedData = require('../seed/gifts');
 
 // Définition des associations
@@ -30,9 +31,18 @@ CategoryModel.hasMany(ProductModel, {
   foreignKey: 'categoryId',
   as: 'products'
 });
-ProductModel.belongsTo(CategoryModel, { 
+ProductModel.belongsTo(CategoryModel, {
   foreignKey: 'categoryId',
   as: 'category'
+});
+
+UserModel.hasMany(SessionModel, {
+  foreignKey: 'userId',
+  as: 'sessions'
+});
+SessionModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
 });
 
 // Fonction pour tester la connexion à la base de données
@@ -75,5 +85,6 @@ module.exports = {
   User: UserModel,
   Product: ProductModel,
   Category: CategoryModel,
-  Gift: GiftModel
+  Gift: GiftModel,
+  Session: SessionModel
 };

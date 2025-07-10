@@ -128,4 +128,8 @@ router.post('/refresh-token', validateRefreshToken, authController.refreshToken)
  */
 router.get('/me', protect, authController.getCurrentUser);
 
+// Gestion des sessions utilisateur
+router.get('/sessions', protect, authController.getSessions);
+router.post('/logout', protect, authController.logout);
+
 module.exports = router;

@@ -3,7 +3,7 @@
  */
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { User, Sequelize } = require('../models');
+const { User, Session, Sequelize } = require('../models');
 const logger = require('../utils/logger');
 const { sendVerificationEmail } = require('../utils/emailService');
 const crypto = require('crypto');
@@ -128,10 +128,20 @@ exports.login = async (req, res, next) => {
       refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000
     });
 
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    await Session.create({
+      token: sessionToken,
+      userId: user.id,
+      ipAddress: req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip,
+      userAgent: req.headers['user-agent'],
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    });
+
     res.status(200).json({
       message: 'Connexion réussie',
       token,
       refreshToken,
+      sessionToken,
       user: {
         id: user.id,
         name: user.name,
@@ -309,6 +319,51 @@ exports.verifyEmail = async (req, res, next) => {
     res.status(200).json({ message: 'Email vérifié avec succès' });
   } catch (error) {
     logger.error("Erreur lors de la vérification de l'email:", error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Déconnexion de l'utilisateur
+ * @route   POST /api/auth/logout
+ * @access  Private
+ */
+exports.logout = async (req, res, next) => {
+  try {
+    const sessionToken = req.headers['x-session-token'] || req.body.sessionToken;
+    if (!sessionToken) {
+      return res.status(400).json({ message: 'Session token manquant' });
+    }
+
+    const session = await Session.findOne({
+      where: { token: sessionToken, userId: req.user.id }
+    });
+    if (session) {
+      await session.destroy();
+    }
+
+    res.status(200).json({ message: 'Déconnexion réussie' });
+  } catch (error) {
+    logger.error('Erreur lors de la déconnexion:', error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Obtenir les sessions actives de l'utilisateur
+ * @route   GET /api/auth/sessions
+ * @access  Private
+ */
+exports.getSessions = async (req, res, next) => {
+  try {
+    const sessions = await Session.findAll({
+      where: { userId: req.user.id },
+      attributes: { exclude: ['userId'] },
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json({ sessions });
+  } catch (error) {
+    logger.error('Erreur lors de la récupération des sessions:', error);
     next(error);
   }
 };
