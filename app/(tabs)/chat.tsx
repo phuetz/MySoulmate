@@ -8,6 +8,8 @@ import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import EmojiPicker from '@/components/EmojiPicker';
 import { generateAIResponse } from '@/utils/aiUtils';
+import OfflineBanner from '@/components/OfflineBanner';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 export default function ChatScreen() {
   const { companion, updateInteractions, isPremium } = useAppState();
@@ -22,6 +24,7 @@ export default function ChatScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const flatListRef = useRef<FlatList>(null);
+  const { isConnected } = useNetworkStatus();
 
   const filteredMessages = messages.filter((m) =>
     m.text.toLowerCase().includes(searchQuery.toLowerCase())
@@ -50,7 +53,7 @@ export default function ChatScreen() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (message.trim() === '') return;
+    if (message.trim() === '' || isConnected === false) return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -244,9 +247,9 @@ export default function ChatScreen() {
     >
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Image 
-            source={{ uri: companion.avatarUrl }} 
-            style={styles.avatar} 
+          <Image
+            source={{ uri: companion.avatarUrl }}
+            style={styles.avatar}
           />
           <View>
             <Text style={styles.name}>{companion.name}</Text>
@@ -258,6 +261,7 @@ export default function ChatScreen() {
           </View>
         </View>
       </View>
+      <OfflineBanner isConnected={isConnected} />
 
       <View style={styles.searchContainer}>
         <TextInput
@@ -309,12 +313,15 @@ export default function ChatScreen() {
               <Smile size={24} color="#9C6ADE" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity 
-            style={[styles.sendButton, message.trim() ? styles.sendButtonActive : {}]}
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              message.trim() && isConnected !== false ? styles.sendButtonActive : {}
+            ]}
             onPress={handleSend}
-            disabled={!message.trim()}
+            disabled={!message.trim() || isConnected === false}
           >
-            <Send size={24} color={message.trim() ? "#FFFFFF" : "#BBBBBB"} />
+            <Send size={24} color={message.trim() && isConnected !== false ? "#FFFFFF" : "#BBBBBB"} />
           </TouchableOpacity>
         </View>
 
