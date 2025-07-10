@@ -259,7 +259,8 @@ mysoulmate-app/
 - Calendrier de rendez-vous
 
 ### 🔄 En cours
-- Intégration AI réelle (actuellement mock)
+- Intégration AI réelle avec suivi des coûts
+- Statistiques d'usage consultables via `aiUsage`
 - Système de paiement
 - Notifications push
 - Tests end-to-end

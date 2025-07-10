@@ -15,6 +15,22 @@ const responseCache = new Map<string, CacheEntry>();
 // Default cache TTL set to 5 minutes
 const CACHE_TTL = 5 * 60 * 1000;
 
+// Track usage statistics for cost monitoring
+interface UsageStats {
+  promptTokens: number;
+  completionTokens: number;
+  totalCostUSD: number;
+}
+
+const usageStats: UsageStats = {
+  promptTokens: 0,
+  completionTokens: 0,
+  totalCostUSD: 0,
+};
+
+// Approximate price per 1K tokens for gpt-3.5-turbo
+const PRICE_PER_1K_TOKENS = 0.002;
+
 if (openaiApiKey) {
   openai = new OpenAI({ apiKey: openaiApiKey });
 }
@@ -160,6 +176,12 @@ export const generateAIResponse = async (
         model: 'gpt-3.5-turbo',
         messages,
       });
+      if (completion.usage) {
+        usageStats.promptTokens += completion.usage.prompt_tokens ?? 0;
+        usageStats.completionTokens += completion.usage.completion_tokens ?? 0;
+        usageStats.totalCostUSD +=
+          ((completion.usage.total_tokens ?? 0) / 1000) * PRICE_PER_1K_TOKENS;
+      }
       const aiMessage = completion.choices[0]?.message?.content;
       if (aiMessage) {
         const response = aiMessage.trim();
@@ -183,4 +205,14 @@ export const generateAIResponse = async (
 export const _cache = {
   clear: () => responseCache.clear(),
   size: () => responseCache.size,
+};
+
+// Expose usage statistics for monitoring
+export const aiUsage = {
+  get: () => ({ ...usageStats }),
+  reset: () => {
+    usageStats.promptTokens = 0;
+    usageStats.completionTokens = 0;
+    usageStats.totalCostUSD = 0;
+  },
 };
