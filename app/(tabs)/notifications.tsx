@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, Switch, Alert } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Switch,
+  Alert,
+} from 'react-native';
 import { Bell, BellOff, Check, Trash2 } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import NotificationItem, { Notification } from '@/components/NotificationItem';
-import { 
-  requestNotificationPermissions, 
-  generateScheduledNotifications, 
-  schedulePersonalizedNotifications 
+import {
+  requestNotificationPermissions,
+  generateScheduledNotifications,
+  schedulePersonalizedNotifications,
+  scheduleDailyNotification,
 } from '@/services/notificationService';
 
 export default function NotificationsScreen() {
@@ -15,7 +24,7 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(
-    companion?.notificationsEnabled ?? true
+    companion?.notificationsEnabled ?? true,
   );
 
   useEffect(() => {
@@ -24,77 +33,95 @@ export default function NotificationsScreen() {
       setPermissionGranted(granted);
       setLoading(false);
     };
-    
+
     checkPermissions();
-    
+
     // Get initial notifications
     const initialNotifications = generateScheduledNotifications(companion);
     setNotifications(initialNotifications);
-    
+
     // Schedule future notifications if enabled
     if (notificationsEnabled) {
       schedulePersonalizedNotifications(companion, { notificationsEnabled });
+      scheduleDailyNotification(
+        `${companion.name} Daily Check-in`,
+        `Come back and talk with ${companion.name}!`,
+        9,
+        0,
+        { route: '/chat' },
+      );
     }
   }, []);
 
   const handleToggleNotifications = (value: boolean) => {
     setNotificationsEnabled(value);
-    
+
     // Update companion preferences
     updateCompanion({
       ...companion,
-      notificationsEnabled: value
+      notificationsEnabled: value,
     });
-    
+
     // If enabling notifications, request permissions if needed
     if (value && !permissionGranted) {
-      requestNotificationPermissions().then(granted => {
+      requestNotificationPermissions().then((granted) => {
         setPermissionGranted(granted);
         if (!granted) {
           Alert.alert(
-            "Permission Required",
-            "To receive notifications, please enable notification permissions in your device settings.",
-            [{ text: "OK" }]
+            'Permission Required',
+            'To receive notifications, please enable notification permissions in your device settings.',
+            [{ text: 'OK' }],
           );
         }
       });
     }
-    
+
     // Schedule or cancel future notifications
     if (value) {
-      schedulePersonalizedNotifications(companion, { notificationsEnabled: value });
+      schedulePersonalizedNotifications(companion, {
+        notificationsEnabled: value,
+      });
+      scheduleDailyNotification(
+        `${companion.name} Daily Check-in`,
+        `Come back and talk with ${companion.name}!`,
+        9,
+        0,
+        { route: '/chat' },
+      );
     }
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(notification => 
-      notification.id === id 
-        ? { ...notification, read: true } 
-        : notification
-    ));
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
+    );
   };
 
   const clearAllNotifications = () => {
     Alert.alert(
-      "Clear Notifications",
-      "Are you sure you want to clear all notifications?",
+      'Clear Notifications',
+      'Are you sure you want to clear all notifications?',
       [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Clear All", 
-          style: "destructive",
-          onPress: () => setNotifications([]) 
-        }
-      ]
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: () => setNotifications([]),
+        },
+      ],
     );
   };
 
   const getUnreadCount = () => {
-    return notifications.filter(notification => !notification.read).length;
+    return notifications.filter((notification) => !notification.read).length;
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(notification => ({ ...notification, read: true })));
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true })),
+    );
   };
 
   return (
@@ -102,7 +129,7 @@ export default function NotificationsScreen() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
       </View>
-      
+
       <View style={styles.preferencesContainer}>
         <View style={styles.preferenceItem}>
           <View style={styles.preferenceTextContainer}>
@@ -120,36 +147,42 @@ export default function NotificationsScreen() {
           />
         </View>
       </View>
-      
+
       {notifications.length > 0 ? (
         <>
           <View style={styles.actionsContainer}>
             <Text style={styles.notificationCount}>
-              {getUnreadCount()} unread {getUnreadCount() === 1 ? 'notification' : 'notifications'}
+              {getUnreadCount()} unread{' '}
+              {getUnreadCount() === 1 ? 'notification' : 'notifications'}
             </Text>
             <View style={styles.actionButtons}>
               {getUnreadCount() > 0 && (
-                <TouchableOpacity style={styles.actionButton} onPress={markAllAsRead}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  onPress={markAllAsRead}
+                >
                   <Check size={16} color="#333333" />
                   <Text style={styles.actionButtonText}>Mark all read</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.clearButton]} 
+              <TouchableOpacity
+                style={[styles.actionButton, styles.clearButton]}
                 onPress={clearAllNotifications}
               >
                 <Trash2 size={16} color="#FF3B30" />
-                <Text style={[styles.actionButtonText, styles.clearButtonText]}>Clear all</Text>
+                <Text style={[styles.actionButtonText, styles.clearButtonText]}>
+                  Clear all
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
-          
+
           <FlatList
             data={notifications}
             renderItem={({ item }) => (
               <NotificationItem notification={item} onRead={markAsRead} />
             )}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id}
             contentContainerStyle={styles.notificationsList}
           />
         </>
@@ -164,12 +197,13 @@ export default function NotificationsScreen() {
           </Text>
         </View>
       )}
-      
+
       {!permissionGranted && notificationsEnabled && !loading && (
         <View style={styles.permissionBanner}>
           <BellOff size={20} color="#FF3B30" />
           <Text style={styles.permissionText}>
-            Notifications are disabled. Please enable them in your device settings.
+            Notifications are disabled. Please enable them in your device
+            settings.
           </Text>
         </View>
       )}
