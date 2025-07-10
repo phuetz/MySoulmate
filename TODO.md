@@ -40,7 +40,7 @@
 - [ ] Implement actual video simulation (animation of companion)
 - [ ] Add video recording features
 - [ ] Support video filters and effects
-- [ ] Implement video call duration tracking and analytics
+- [x] Implement video call duration tracking and analytics
 
 ### AR Experience
 
