@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Alert, Switch, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, Alert, Switch, ActivityIndicator, Image } from 'react-native';
 import { Send, Search, Filter, Edit, Trash2 } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import { Notification } from '@/components/NotificationItem';
@@ -13,6 +13,7 @@ export default function AdminNotificationsScreen() {
   const [newNotification, setNewNotification] = useState({
     title: '',
     message: '',
+    imageUrl: '',
     isScheduled: false,
     scheduledDate: '',
     isPush: true,
@@ -25,6 +26,7 @@ export default function AdminNotificationsScreen() {
       type: 'system',
       title: 'New Feature Announcement',
       message: 'We\'ve added new premium voice features. Check them out today!',
+      imageUrl: 'https://images.pexels.com/photos/556669/pexels-photo-556669.jpeg?auto=compress&cs=tinysrgb&w=600',
       time: '3 days ago',
       read: true,
       actionRoute: '/voice'
@@ -34,6 +36,7 @@ export default function AdminNotificationsScreen() {
       type: 'system',
       title: 'Premium Subscription Promotion',
       message: '50% off on yearly subscriptions for the next 48 hours.',
+      imageUrl: 'https://images.pexels.com/photos/2523959/pexels-photo-2523959.jpeg?auto=compress&cs=tinysrgb&w=600',
       time: '1 week ago',
       read: true,
       actionRoute: '/settings'
@@ -43,6 +46,7 @@ export default function AdminNotificationsScreen() {
       type: 'system',
       title: 'System Maintenance',
       message: 'The app will be down for maintenance on Sunday from 2-4am UTC.',
+      imageUrl: 'https://images.pexels.com/photos/159298/tools-screwdriver-screws-nuts-bolts-159298.jpeg?auto=compress&cs=tinysrgb&w=600',
       time: '2 weeks ago',
       read: true
     },
@@ -51,6 +55,7 @@ export default function AdminNotificationsScreen() {
       type: 'system',
       title: 'Welcome to My Soulmate',
       message: 'Welcome to My Soulmate! Discover all our features to connect with your AI companion.',
+      imageUrl: 'https://images.pexels.com/photos/1907227/pexels-photo-1907227.jpeg?auto=compress&cs=tinysrgb&w=600',
       time: '1 month ago',
       read: true
     }
@@ -111,6 +116,7 @@ export default function AdminNotificationsScreen() {
         type: 'system',
         title: newNotification.title,
         message: newNotification.message,
+        imageUrl: newNotification.imageUrl || undefined,
         time: 'Just now',
         read: false
       };
@@ -146,6 +152,7 @@ export default function AdminNotificationsScreen() {
       setNewNotification({
         title: '',
         message: '',
+        imageUrl: '',
         isScheduled: false,
         scheduledDate: '',
         isPush: true,
@@ -161,6 +168,9 @@ export default function AdminNotificationsScreen() {
       <View style={styles.notificationContent}>
         <Text style={styles.notificationTitle}>{item.title}</Text>
         <Text style={styles.notificationMessage}>{item.message}</Text>
+        {item.imageUrl && (
+          <Image source={{ uri: item.imageUrl }} style={styles.notificationImage} />
+        )}
         <Text style={styles.notificationTime}>{item.time}</Text>
       </View>
       
@@ -264,6 +274,16 @@ export default function AdminNotificationsScreen() {
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Image URL (optional)</Text>
+              <TextInput
+                style={styles.input}
+                value={newNotification.imageUrl}
+                onChangeText={(text) => setNewNotification({...newNotification, imageUrl: text})}
+                placeholder="https://example.com/image.jpg"
               />
             </View>
             
@@ -491,6 +511,12 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginBottom: 8,
     lineHeight: 20,
+  },
+  notificationImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   notificationTime: {
     fontSize: 12,
