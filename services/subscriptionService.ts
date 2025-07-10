@@ -11,6 +11,12 @@ export interface SubscriptionPlan {
   trialDays?: number;
 }
 
+export interface UserInfo {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Subscriber {
   id: string;
   userId: string;
@@ -238,6 +244,29 @@ export const subscriptionService = {
       retentionRate: 78.3, // percentage
       churnRate: 7.2 // percentage
     };
+  },
+
+  async startTrial(user: UserInfo, plan: SubscriptionPlan): Promise<Subscriber> {
+    const start = new Date();
+    const days = plan.trialDays ?? 7;
+    const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
+
+    const trialSubscription: Subscriber = {
+      id: `sub_${Date.now()}`,
+      userId: user.id,
+      userName: user.name,
+      userEmail: user.email,
+      planId: plan.id,
+      planName: plan.name,
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      status: 'trial',
+      autoRenew: false,
+      paymentMethod: '',
+      nextPaymentDate: end.toISOString()
+    };
+
+    return trialSubscription;
   },
 
   async cancelSubscription(id: string): Promise<void> {
