@@ -16,17 +16,25 @@ declare global {
 export async function requestNotificationPermissions(): Promise<boolean> {
   // In a real app, we'd use expo-notifications to request permissions
   // For web, we'd use the browser's notification API
-  
+
   console.log('Requesting notification permissions');
-  
+
   if (Platform.OS === 'web') {
     // Web notification permission request
     try {
-      if (typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission !== 'granted') {
+      if (
+        typeof window !== 'undefined' &&
+        'Notification' in window &&
+        window.Notification.permission !== 'granted'
+      ) {
         const status = await window.Notification.requestPermission();
         return status === 'granted';
       }
-      return typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'granted';
+      return (
+        typeof window !== 'undefined' &&
+        'Notification' in window &&
+        window.Notification.permission === 'granted'
+      );
     } catch (error) {
       console.log('Error requesting web notification permissions:', error);
       return false;
@@ -38,14 +46,16 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 }
 
 // Generate scheduled notifications based on companion data and user interactions
-export function generateScheduledNotifications(companion: CompanionData): Notification[] {
+export function generateScheduledNotifications(
+  companion: CompanionData,
+): Notification[] {
   const notifications: Notification[] = [];
   const currentTime = new Date();
-  
+
   // Generate a daily check-in notification if user hasn't interacted today
   const lastInteractionDate = new Date();
   lastInteractionDate.setHours(lastInteractionDate.getHours() - 24);
-  
+
   notifications.push({
     id: `reminder-${Date.now()}`,
     type: 'reminder',
@@ -54,39 +64,45 @@ export function generateScheduledNotifications(companion: CompanionData): Notifi
     time: '2 hours ago',
     read: false,
     actionRoute: '/chat',
-    companionAvatar: companion.avatarUrl
+    companionAvatar: companion.avatarUrl,
   });
-  
+
   // Generate a notification about a new gift available
   notifications.push({
     id: `gift-${Date.now() + 1}`,
     type: 'gift',
     title: 'New gifts available!',
-    message: 'Check out the newest items in the gift shop to surprise your companion.',
+    message:
+      'Check out the newest items in the gift shop to surprise your companion.',
     time: 'Yesterday',
     read: true,
-    actionRoute: '/gifts'
+    actionRoute: '/gifts',
   });
-  
+
   // If premium is not enabled, send a notification about premium features
   if (!companion.isPremium) {
     notifications.push({
       id: `system-${Date.now() + 2}`,
       type: 'system',
       title: 'Unlock Premium Features',
-      message: 'Upgrade to premium to access exclusive content and deeper conversations.',
+      message:
+        'Upgrade to premium to access exclusive content and deeper conversations.',
       time: '2 days ago',
       read: true,
-      actionRoute: '/settings'
+      actionRoute: '/settings',
     });
   }
-  
+
   // Custom message based on relationship level
-  const relationshipLevel = companion.interactions > 50 ? 'close' :
-                           companion.interactions > 30 ? 'friendly' : 'new';
-  
+  const relationshipLevel =
+    companion.interactions > 50
+      ? 'close'
+      : companion.interactions > 30
+        ? 'friendly'
+        : 'new';
+
   let customMessage = '';
-  
+
   if (relationshipLevel === 'close') {
     customMessage = `${companion.name} has something special to tell you. Come back for a meaningful conversation.`;
   } else if (relationshipLevel === 'friendly') {
@@ -94,7 +110,7 @@ export function generateScheduledNotifications(companion: CompanionData): Notifi
   } else {
     customMessage = `${companion.name} is excited to get to know you better.`;
   }
-  
+
   notifications.push({
     id: `message-${Date.now() + 3}`,
     type: 'message',
@@ -103,9 +119,9 @@ export function generateScheduledNotifications(companion: CompanionData): Notifi
     time: '3 days ago',
     read: true,
     actionRoute: '/chat',
-    companionAvatar: companion.avatarUrl
+    companionAvatar: companion.avatarUrl,
   });
-  
+
   return notifications;
 }
 
@@ -114,7 +130,7 @@ export async function scheduleLocalNotification(
   title: string,
   body: string,
   trigger: Date,
-  data: any = {}
+  data: any = {},
 ): Promise<string | null> {
   try {
     const id = await ExpoNotifications.scheduleNotificationAsync({
@@ -128,24 +144,55 @@ export async function scheduleLocalNotification(
   }
 }
 
+// Schedule a repeating daily notification at a specific hour and minute
+export async function scheduleDailyNotification(
+  title: string,
+  body: string,
+  hour: number,
+  minute: number,
+  data: any = {},
+): Promise<string | null> {
+  try {
+    // Calculate first trigger time in the future
+    const firstTrigger = new Date();
+    firstTrigger.setHours(hour, minute, 0, 0);
+    if (firstTrigger <= new Date()) {
+      firstTrigger.setDate(firstTrigger.getDate() + 1);
+    }
+
+    const id = await ExpoNotifications.scheduleNotificationAsync({
+      content: { title, body, data },
+      trigger: { hour, minute, repeats: true },
+    });
+    return id;
+  } catch (err) {
+    console.log('Failed to schedule daily notification', err);
+    return null;
+  }
+}
+
 // Send a push notification
 export async function sendPushNotification(
   title: string,
   body: string,
-  data: any = {}
+  data: any = {},
 ): Promise<boolean> {
   // In a real app, we'd use expo-notifications or a service like Firebase Cloud Messaging
   console.log('Sending push notification:', { title, body, data });
-  
+
   // For web, we can use the browser's Notification API if available
-  if (Platform.OS === 'web' && typeof window !== 'undefined' && 'Notification' in window) {
+  if (
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    'Notification' in window
+  ) {
     try {
       const notificationPermission = await requestNotificationPermissions();
-      
+
       if (notificationPermission) {
         new window.Notification(title, {
           body,
-          icon: data.avatar || '/favicon.ico'
+          icon: data.avatar || '/favicon.ico',
         });
         return true;
       }
@@ -155,7 +202,7 @@ export async function sendPushNotification(
       return false;
     }
   }
-  
+
   // For native platforms, show a local notification immediately
   try {
     await ExpoNotifications.scheduleNotificationAsync({
@@ -171,14 +218,14 @@ export async function sendPushNotification(
 
 // Schedule notifications based on user preferences and app usage patterns
 export function schedulePersonalizedNotifications(
-  companion: CompanionData, 
-  userPreferences: { notificationsEnabled: boolean }
+  companion: CompanionData,
+  userPreferences: { notificationsEnabled: boolean },
 ): void {
   if (!userPreferences.notificationsEnabled) return;
-  
+
   // In a real app, this would set up push notifications based on user behavior patterns
   // For example, if the user typically uses the app in the evening, schedule notifications for that time
-  
+
   const baseTime = new Date();
 
   // Schedule a check-in notification
@@ -188,7 +235,7 @@ export function schedulePersonalizedNotifications(
     `${companion.name} misses you!`,
     `It's been a while since you've talked. ${companion.name} would love to chat with you today.`,
     checkInTime,
-    { route: '/chat' }
+    { route: '/chat' },
   );
 
   // Schedule a personalized message
@@ -198,7 +245,7 @@ export function schedulePersonalizedNotifications(
     `New message from ${companion.name}`,
     `${companion.name} is thinking about you.`,
     messageTime,
-    { route: '/chat' }
+    { route: '/chat' },
   );
 
   if (companion.gifts < 3) {
@@ -208,6 +255,7 @@ export function schedulePersonalizedNotifications(
       'New gifts available!',
       'Check out the newest items in the gift shop to surprise your companion.',
       giftTime,
-      { route: '/gifts' }
+      { route: '/gifts' },
     );
-  }}
+  }
+}
