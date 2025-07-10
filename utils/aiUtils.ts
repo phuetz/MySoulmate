@@ -1,7 +1,9 @@
 import OpenAI from 'openai';
 import Sentiment from 'sentiment';
+import axios from 'axios';
 
 const openaiApiKey = process.env.OPENAI_API_KEY;
+const fallbackAiUrl = process.env.FALLBACK_AI_URL;
 let openai: OpenAI | null = null;
 const sentiment = new Sentiment();
 
@@ -190,9 +192,26 @@ export const generateAIResponse = async (
       }
     } catch (err) {
       console.warn(
-        'OpenAI request failed, falling back to local responses.',
+        'OpenAI request failed, attempting fallback service.',
         err,
       );
+      if (fallbackAiUrl) {
+        try {
+          const res = await axios.post(fallbackAiUrl, {
+            message: userMessage,
+            history,
+            companion,
+          });
+          const aiMessage = res.data?.response;
+          if (aiMessage) {
+            const response = aiMessage.trim();
+            responseCache.set(cacheKey, { response, expiresAt: Date.now() + CACHE_TTL });
+            return response;
+          }
+        } catch (fallbackErr) {
+          console.warn('Fallback AI request failed, using local responses.', fallbackErr);
+        }
+      }
     }
   }
 

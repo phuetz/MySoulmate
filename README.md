@@ -139,6 +139,7 @@ cp .env.example .env
 # Modifier les variables d'environnement selon votre configuration
 ```
 Assurez-vous notamment de renseigner `OPENAI_API_KEY` pour activer la génération d'avatars par IA.
+Vous pouvez également définir `FALLBACK_AI_URL` pour spécifier un service de secours en cas d'indisponibilité d'OpenAI.
 
 4. **Initialiser la base de données**
 ```bash
@@ -261,6 +262,7 @@ mysoulmate-app/
 ### 🔄 En cours
 - Intégration AI réelle avec suivi des coûts
 - Statistiques d'usage consultables via `aiUsage`
+- Mécanisme de secours en cas d'indisponibilité du service AI
 - Système de paiement
 - Notifications push
 - Tests end-to-end
