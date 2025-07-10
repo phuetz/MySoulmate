@@ -10,6 +10,7 @@ import {
 import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import Voice from '@react-native-community/voice';
+import { generateAIResponse } from '@/utils/aiUtils';
 import {
   Mic,
   MicOff,
@@ -138,7 +139,21 @@ export default function VoiceScreen() {
       const text = transcriptRef.current.trim();
       if (text.length > 0) {
         setConversation((prev) => [...prev, { from: 'user', text }]);
+        updateInteractions(1);
         transcriptRef.current = '';
+
+        try {
+          const history = conversation.slice(-5).map((m) => ({
+            role: m.from === 'user' ? 'user' : 'assistant',
+            content: m.text,
+          }));
+          const aiText = await generateAIResponse(text, companion, history);
+          setConversation((prev) => [...prev, { from: 'ai', text: aiText }]);
+          Speech.speak(aiText);
+          updateInteractions(1);
+        } catch (err) {
+          console.error('Failed to generate AI response', err);
+        }
       }
     }
     setRecording(null);
