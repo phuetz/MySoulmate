@@ -13,6 +13,7 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 export default function ChatScreen() {
   const { companion, updateInteractions, isPremium } = useAppState();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,6 +26,12 @@ export default function ChatScreen() {
   const recordingRef = useRef<Audio.Recording | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const { isConnected } = useNetworkStatus();
+
+  useEffect(() => {
+    if (!isPremium && companion.interactions >= 20) {
+      setShowUpgradeModal(true);
+    }
+  }, [companion.interactions, isPremium]);
 
   const filteredMessages = messages.filter((m) =>
     m.text.toLowerCase().includes(searchQuery.toLowerCase())
@@ -337,6 +344,12 @@ export default function ChatScreen() {
         onClose={() => setShowNSFWModal(false)}
         featureName="NSFW Content"
         description="Unlock intimate conversations and NSFW content with your AI companion."
+      />
+      <PremiumFeatureModal
+        visible={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName="Premium Membership"
+        description="You've reached the interaction limit for free users. Upgrade to continue without restrictions."
       />
       <EmojiPicker
         visible={emojiPickerVisible}
