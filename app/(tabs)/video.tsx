@@ -6,7 +6,7 @@ import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function VideoScreen() {
-  const { companion, isPremium, updateInteractions } = useAppState();
+  const { companion, isPremium, updateInteractions, addVideoCall } = useAppState();
   const [isCallActive, setIsCallActive] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -54,6 +54,9 @@ export default function VideoScreen() {
 
   const endCall = () => {
     setIsCallActive(false);
+    if (callDuration > 0) {
+      addVideoCall(callDuration);
+    }
     setCallDuration(0);
   };
 

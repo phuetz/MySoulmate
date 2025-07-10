@@ -27,12 +27,14 @@ interface CompanionData {
   level?: number; // Gamification level
   xp?: number; // Experience points
   achievements?: string[]; // Unlocked achievements
+  videoCallHistory?: { duration: number; timestamp: string }[]; // Video call logs
 }
 
 interface AppStateContextType {
   companion: CompanionData;
   updateCompanion: (data: CompanionData) => void;
   updateInteractions: (count: number) => void;
+  addVideoCall: (duration: number) => void;
   isPremium: boolean;
   setIsPremium: (value: boolean) => void;
   verified: boolean;
@@ -85,7 +87,8 @@ const defaultCompanion: CompanionData = {
   arExperiences: 0,
   level: 1,
   xp: 150,
-  achievements: ['first_conversation', 'early_bird']
+  achievements: ['first_conversation', 'early_bird'],
+  videoCallHistory: []
 };
 
 // Provider component
@@ -124,6 +127,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const addVideoCall = (duration: number) => {
+    setCompanion(prev => {
+      const newHistory = [
+        { duration, timestamp: new Date().toISOString() },
+        ...(prev.videoCallHistory || [])
+      ];
+      return { ...prev, videoCallHistory: newHistory } as CompanionData;
+    });
+  };
+
   useEffect(() => {
     // Simulate notifications coming in periodically
     const interval = setInterval(() => {
@@ -144,8 +157,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       value={{ 
         companion, 
         updateCompanion, 
-        updateInteractions, 
-        isPremium, 
+        updateInteractions,
+        addVideoCall,
+        isPremium,
         setIsPremium,
         verified,
         setVerified,

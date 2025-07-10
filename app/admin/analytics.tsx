@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
-import { Calendar, Users, ShoppingBag, CreditCard } from 'lucide-react-native';
+import { Calendar, Users, ShoppingBag, CreditCard, Video } from 'lucide-react-native';
+import { useAppState } from '@/context/AppStateContext';
 
 export default function AnalyticsScreen() {
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('month');
   const screenWidth = Dimensions.get('window').width - 32;
+  const { companion } = useAppState();
+  const totalVideoMinutes = Math.floor(
+    (companion.videoCallHistory?.reduce((sum, call) => sum + call.duration, 0) || 0) / 60
+  );
 
   const revenueData = {
     week: {
@@ -136,6 +141,11 @@ export default function AnalyticsScreen() {
           <CreditCard size={24} color="#4CAF50" />
           <Text style={styles.statValue}>$4.5k</Text>
           <Text style={styles.statLabel}>Revenue</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Video size={24} color="#4285F4" />
+          <Text style={styles.statValue}>{totalVideoMinutes}m</Text>
+          <Text style={styles.statLabel}>Video Calls</Text>
         </View>
       </View>
 
