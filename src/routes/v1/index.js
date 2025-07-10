@@ -11,6 +11,7 @@ const productRoutes = require('../productRoutes');
 const categoryRoutes = require('../categoryRoutes');
 const giftRoutes = require('../giftRoutes');
 const avatarRoutes = require('../avatarRoutes');
+const inventoryRoutes = require('../inventoryRoutes');
 
 // Définir les routes pour l'API v1
 router.use('/auth', authRoutes);
@@ -18,6 +19,7 @@ router.use('/users', userRoutes);
 router.use('/products', productRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/gifts', giftRoutes);
+router.use('/inventory', inventoryRoutes);
 router.use('/avatars', avatarRoutes);
 
 module.exports = router;
