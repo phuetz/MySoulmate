@@ -68,7 +68,7 @@
 
 - [ ] Implement actual subscription management
 - [ ] Connect to payment providers (Stripe, etc.)
-- [ ] Add trial period functionality
+- [x] Add trial period functionality
 - [ ] Implement upgrade prompts based on user behavior
 
 ### Admin Dashboard
