@@ -97,7 +97,7 @@
 - [x] Implement rate limiting for auth endpoints
 - [x] Add IP-based filtering for suspicious activities
 - [x] Implement password policies and validation
-- [ ] Add user session management
+- [x] Add user session management
 
 ### Database
 
