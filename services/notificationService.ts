@@ -128,6 +128,41 @@ export function generateScheduledNotifications(
   return notifications;
 }
 
+// Create a notification message based on the user's interactions with the companion
+export function generateInteractionNotification(
+  companion: CompanionData,
+): Notification {
+  let title: string;
+  let message: string;
+
+  if (companion.interactions > 50) {
+    title = `${companion.name} is thinking of you`;
+    message = `You and ${companion.name} have shared many moments together. Come back soon!`;
+  } else if (companion.interactions > 20) {
+    title = `Catch up with ${companion.name}`;
+    message = `${companion.name} enjoyed your last conversation. Say hi again!`;
+  } else {
+    title = `Get to know ${companion.name}`;
+    message = `Start chatting with ${companion.name} to build your relationship.`;
+  }
+
+  if (companion.gifts === 0) {
+    message += ' You can send a first gift from the shop!';
+  }
+
+  return {
+    id: `interaction-${Date.now()}`,
+    type: 'reminder',
+    title,
+    message,
+    time: 'Just now',
+    read: false,
+    actionRoute: '/chat',
+    companionAvatar: companion.avatarUrl,
+    imageUrl: companion.avatarUrl,
+  };
+}
+
 // Schedule a local notification using expo-notifications
 export async function scheduleLocalNotification(
   title: string,
@@ -230,6 +265,17 @@ export function schedulePersonalizedNotifications(
   // For example, if the user typically uses the app in the evening, schedule notifications for that time
 
   const baseTime = new Date();
+
+  // Send an initial notification based on recent interactions
+  const interactionNotif = generateInteractionNotification(companion);
+  const interactionTime = new Date(baseTime);
+  interactionTime.setMinutes(interactionTime.getMinutes() + 10);
+  scheduleLocalNotification(
+    interactionNotif.title,
+    interactionNotif.message,
+    interactionTime,
+    { route: interactionNotif.actionRoute },
+  );
 
   // Schedule a check-in notification
   const checkInTime = new Date(baseTime);
