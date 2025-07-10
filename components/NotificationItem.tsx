@@ -12,6 +12,7 @@ export interface Notification {
   read: boolean;
   actionRoute?: string;
   companionAvatar?: string;
+  imageUrl?: string;
 }
 
 interface NotificationItemProps {
@@ -61,6 +62,9 @@ export default function NotificationItem({ notification, onRead }: NotificationI
           <Text style={styles.time}>{notification.time}</Text>
         </View>
         <Text style={styles.message}>{notification.message}</Text>
+        {notification.imageUrl && (
+          <Image source={{ uri: notification.imageUrl }} style={styles.image} />
+        )}
       </View>
       
       {notification.companionAvatar && (
@@ -129,6 +133,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 12,
     backgroundColor: '#E1E1E1',
+  },
+  image: {
+    marginTop: 8,
+    width: '100%',
+    height: 180,
+    borderRadius: 8,
   },
   unreadDot: {
     position: 'absolute',

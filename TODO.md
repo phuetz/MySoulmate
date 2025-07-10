@@ -62,7 +62,7 @@
 - [ ] Replace mock notifications with actual push notification service
 - [x] Implement scheduled notifications
 - [ ] Add personalized notification content based on user interactions
-- [ ] Support rich notifications with images
+ - [x] Support rich notifications with images
 
 ### Premium Features
 

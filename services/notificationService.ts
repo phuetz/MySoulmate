@@ -65,6 +65,7 @@ export function generateScheduledNotifications(
     read: false,
     actionRoute: '/chat',
     companionAvatar: companion.avatarUrl,
+    imageUrl: companion.avatarUrl,
   });
 
   // Generate a notification about a new gift available
@@ -77,6 +78,7 @@ export function generateScheduledNotifications(
     time: 'Yesterday',
     read: true,
     actionRoute: '/gifts',
+    imageUrl: 'https://images.pexels.com/photos/36026/rose-red-blossom-bloom-36026.jpeg?auto=compress&cs=tinysrgb&w=600',
   });
 
   // If premium is not enabled, send a notification about premium features
@@ -120,6 +122,7 @@ export function generateScheduledNotifications(
     read: true,
     actionRoute: '/chat',
     companionAvatar: companion.avatarUrl,
+    imageUrl: companion.avatarUrl,
   });
 
   return notifications;
