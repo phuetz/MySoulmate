@@ -16,6 +16,9 @@
       "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
+    "extra": {
+      "apiUrl": "http://localhost:3000/api/v1"
+    },
     "plugins": ["expo-router"],
     "experiments": {
       "typedRoutes": true
