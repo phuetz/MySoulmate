@@ -5,6 +5,16 @@ const openaiApiKey = process.env.OPENAI_API_KEY;
 let openai: OpenAI | null = null;
 const sentiment = new Sentiment();
 
+// Simple in-memory cache for AI responses
+interface CacheEntry {
+  response: string;
+  expiresAt: number;
+}
+
+const responseCache = new Map<string, CacheEntry>();
+// Default cache TTL set to 5 minutes
+const CACHE_TTL = 5 * 60 * 1000;
+
 if (openaiApiKey) {
   openai = new OpenAI({ apiKey: openaiApiKey });
 }
@@ -118,6 +128,12 @@ export const generateAIResponse = async (
   companion: any,
   history: ConversationMessage[] = [],
 ) => {
+  const historyKey = history.map(m => `${m.role}:${m.content}`).join('|');
+  const cacheKey = `${companion.id || companion.name}-${userMessage}-${historyKey}`;
+  const cached = responseCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.response;
+  }
   const sentimentScore = sentiment.analyze(userMessage).score;
   const sentimentLabel =
     sentimentScore > 2
@@ -146,7 +162,9 @@ export const generateAIResponse = async (
       });
       const aiMessage = completion.choices[0]?.message?.content;
       if (aiMessage) {
-        return aiMessage.trim();
+        const response = aiMessage.trim();
+        responseCache.set(cacheKey, { response, expiresAt: Date.now() + CACHE_TTL });
+        return response;
       }
     } catch (err) {
       console.warn(
@@ -156,5 +174,13 @@ export const generateAIResponse = async (
     }
   }
 
-  return fallbackResponse(userMessage, companion);
+  const response = fallbackResponse(userMessage, companion);
+  responseCache.set(cacheKey, { response, expiresAt: Date.now() + CACHE_TTL });
+  return response;
+};
+
+// Expose cache for testing purposes
+export const _cache = {
+  clear: () => responseCache.clear(),
+  size: () => responseCache.size,
 };
