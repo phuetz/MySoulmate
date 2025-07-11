@@ -59,8 +59,39 @@ export default function ChatScreen() {
     AsyncStorage.setItem('chatMessages', JSON.stringify(messages));
   }, [messages]);
 
+  useEffect(() => {
+    const syncOffline = async () => {
+      if (isConnected !== true) return;
+      const stored = await AsyncStorage.getItem('offlineMessages');
+      if (!stored) return;
+      const queue = JSON.parse(stored);
+      for (const msg of queue) {
+        await processAIResponse(msg);
+      }
+      await AsyncStorage.removeItem('offlineMessages');
+    };
+    syncOffline();
+  }, [isConnected]);
+
+  const processAIResponse = async (msg: { id: string; text: string }) => {
+    setIsTyping(true);
+    const history = [...messages, msg]
+      .slice(-5)
+      .filter(m => typeof m.text === 'string')
+      .map(m => ({ role: m.isUser ? 'user' : 'assistant', content: m.text }));
+    const response = await generateAIResponse(msg.text, companion, history);
+    const aiMessage = {
+      id: (Date.now() + 1).toString(),
+      text: response,
+      isUser: false,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, aiMessage]);
+    setIsTyping(false);
+  };
+
   const handleSend = async () => {
-    if (message.trim() === '' || isConnected === false) return;
+    if (message.trim() === '') return;
 
     const userMessage = {
       id: Date.now().toString(),
@@ -69,28 +100,19 @@ export default function ChatScreen() {
       timestamp: new Date(),
     };
 
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setMessages(prevMessages => [...prevMessages, userMessage]);
     setMessage('');
     updateInteractions(1);
 
-    // Simulate AI responding
-    setIsTyping(true);
-    setTimeout(async () => {
-      const history = messages
-        .slice(-5)
-        .filter(m => typeof m.text === 'string')
-        .map(m => ({ role: m.isUser ? 'user' : 'assistant', content: m.text }));
+    if (isConnected === false) {
+      const stored = await AsyncStorage.getItem('offlineMessages');
+      const queue = stored ? JSON.parse(stored) : [];
+      queue.push(userMessage);
+      await AsyncStorage.setItem('offlineMessages', JSON.stringify(queue));
+      return;
+    }
 
-      const response = await generateAIResponse(message, companion, history);
-      const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        text: response,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setMessages((prevMessages) => [...prevMessages, aiMessage]);
-      setIsTyping(false);
-    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+    setTimeout(() => processAIResponse(userMessage), 1000 + Math.random() * 2000);
   };
 
   const handleNSFWRequest = () => {
