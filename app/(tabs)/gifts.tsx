@@ -84,6 +84,13 @@ export default function GiftsScreen() {
                   ? 5
                   : 1;
 
+            const effectDuration = 24 * 60 * 60 * 1000; // 24h
+            const newEffect = {
+              giftId: gift.id,
+              description: gift.effect,
+              expiresAt: Date.now() + effectDuration
+            };
+
             // Update companion data
             updateCompanion({
               ...companion,
@@ -91,7 +98,8 @@ export default function GiftsScreen() {
               gifts: (companion.gifts || 0) + 1,
               recentActivities: updatedActivities,
               interactions: (companion.interactions || 0) + 5, // Gift giving is a significant interaction
-              affection: (companion.affection || 0) + affectionPoints
+              affection: (companion.affection || 0) + affectionPoints,
+              activeGiftEffects: [...(companion.activeGiftEffects || []), newEffect]
             });
             
             // Show success message
