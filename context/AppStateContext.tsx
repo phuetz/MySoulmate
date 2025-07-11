@@ -2,6 +2,12 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { FlatList } from 'react-native';
 
 // Define types
+interface GiftEffect {
+  giftId: string;
+  description: string;
+  expiresAt: number;
+}
+
 interface CompanionData {
   id: string;
   name: string;
@@ -29,6 +35,7 @@ interface CompanionData {
   achievements?: string[]; // Unlocked achievements
   videoCallHistory?: { duration: number; timestamp: string }[]; // Video call logs
   affection?: number; // Affection level increased by gifts
+  activeGiftEffects?: GiftEffect[]; // Currently active gift effects
 }
 
 interface AppStateContextType {
@@ -92,7 +99,8 @@ const defaultCompanion: CompanionData = {
   xp: 150,
   achievements: ['first_conversation', 'early_bird'],
   videoCallHistory: [],
-  affection: 0
+  affection: 0,
+  activeGiftEffects: []
 };
 
 // Provider component
@@ -141,6 +149,21 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       return { ...prev, videoCallHistory: newHistory } as CompanionData;
     });
   };
+
+  // Remove expired gift effects every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCompanion(prev => {
+        const effects = prev.activeGiftEffects || [];
+        if (effects.length === 0) return prev;
+        const now = Date.now();
+        const filtered = effects.filter(e => e.expiresAt > now);
+        if (filtered.length === effects.length) return prev;
+        return { ...prev, activeGiftEffects: filtered } as CompanionData;
+      });
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Simulate notifications coming in periodically
