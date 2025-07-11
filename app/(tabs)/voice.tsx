@@ -24,7 +24,7 @@ import { useRouter } from 'expo-router';
 
 export default function VoiceScreen() {
   const router = useRouter();
-  const { companion, isPremium, updateInteractions } = useAppState();
+  const { companion, isPremium, updateInteractions, selectedVoice } = useAppState();
   const [isRecording, setIsRecording] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -71,7 +71,7 @@ export default function VoiceScreen() {
             ...prev,
             { from: 'ai', text: randomResponse },
           ]);
-          Speech.speak(randomResponse);
+          Speech.speak(randomResponse, selectedVoice ? { voice: selectedVoice } : undefined);
           updateInteractions(1);
         }
       }, 1000);
@@ -149,7 +149,7 @@ export default function VoiceScreen() {
           }));
           const aiText = await generateAIResponse(text, companion, history);
           setConversation((prev) => [...prev, { from: 'ai', text: aiText }]);
-          Speech.speak(aiText);
+          Speech.speak(aiText, selectedVoice ? { voice: selectedVoice } : undefined);
           updateInteractions(1);
         } catch (err) {
           console.error('Failed to generate AI response', err);
