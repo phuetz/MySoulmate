@@ -17,6 +17,7 @@ interface CompanionData {
   nsfwEnabled: boolean;
   notificationsEnabled: boolean;
   purchasedGifts?: string[];
+  giftEffects?: string[];
   recentActivities: {
     type: 'message' | 'gift' | 'voice' | 'video';
     description: string;
@@ -69,6 +70,7 @@ const defaultCompanion: CompanionData = {
   nsfwEnabled: false,
   notificationsEnabled: true,
   purchasedGifts: ['1', '2'],
+  giftEffects: [],
   recentActivities: [
     {
       type: 'message',

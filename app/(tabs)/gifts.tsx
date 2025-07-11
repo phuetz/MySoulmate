@@ -75,14 +75,18 @@ export default function GiftsScreen() {
             };
             
             const updatedActivities = [newActivity, ...(companion.recentActivities || []).slice(0, 9)];
-            
+
             // Update companion data
             updateCompanion({
               ...companion,
               purchasedGifts: updatedPurchasedGifts,
               gifts: (companion.gifts || 0) + 1,
               recentActivities: updatedActivities,
-              interactions: (companion.interactions || 0) + 5 // Gift giving is a significant interaction
+              interactions: (companion.interactions || 0) + 5, // Gift giving is a significant interaction
+              giftEffects: [
+                ...(companion.giftEffects || []),
+                gift.effect,
+              ].slice(-5)
             });
             
             // Show success message

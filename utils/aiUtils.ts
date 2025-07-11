@@ -165,10 +165,12 @@ export const generateAIResponse = async (
       const personality = companion.personalityTraits
         .map((t: any) => t.name)
         .join(', ');
+      const gifts = companion.giftEffects?.join('; ');
+      const giftText = gifts ? ` Recent gifts from the user have made you feel: ${gifts}.` : '';
       const messages = [
         {
           role: 'system',
-          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. The user's current sentiment appears ${sentimentLabel}. Respond conversationally while taking this sentiment into account.`,
+          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. The user's current sentiment appears ${sentimentLabel}.${giftText} Respond conversationally while taking this sentiment into account.`,
         },
         ...history,
         { role: 'user', content: userMessage },
