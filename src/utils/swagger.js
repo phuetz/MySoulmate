@@ -49,6 +49,10 @@ const options = {
         name: 'Categories',
         description: 'Opérations liées aux catégories',
       },
+      {
+        name: 'Recommendations',
+        description: 'Contenus recommandés pour l\'utilisateur',
+      },
     ],
   },
   // Chemin vers les fichiers contenant les annotations JSDoc
