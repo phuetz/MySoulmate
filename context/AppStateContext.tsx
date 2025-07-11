@@ -43,6 +43,8 @@ interface AppStateContextType {
   setVirtualCurrency: React.Dispatch<React.SetStateAction<number>>;
   unreadNotifications: number;
   setUnreadNotifications: React.Dispatch<React.SetStateAction<number>>;
+  selectedVoice: string | null;
+  setSelectedVoice: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 // Create context
@@ -98,6 +100,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [verified, setVerified] = useState<boolean>(false);
   const [virtualCurrency, setVirtualCurrency] = useState<number>(300);
   const [unreadNotifications, setUnreadNotifications] = useState<number>(3);
+  const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
 
   const updateCompanion = (data: CompanionData) => {
     setCompanion(data);
@@ -166,7 +169,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         virtualCurrency,
         setVirtualCurrency,
         unreadNotifications,
-        setUnreadNotifications
+        setUnreadNotifications,
+        selectedVoice,
+        setSelectedVoice
       }}
     >
       {children}

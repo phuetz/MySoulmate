@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, Switch, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Lock, Bell, Shield, CreditCard, Star, CircleHelp as HelpCircle, LogOut, ChevronRight, Check } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, Switch, TouchableOpacity, ScrollView, Alert, Modal } from 'react-native';
+import { Lock, Bell, Shield, CreditCard, Star, CircleHelp as HelpCircle, LogOut, ChevronRight, Check, Mic, X } from 'lucide-react-native';
+import * as Speech from 'expo-speech';
 import { useAppState } from '@/context/AppStateContext';
 import NotificationsPermissionPrompt from '@/components/NotificationsPermissionPrompt';
 import { requestNotificationPermissions } from '@/services/notificationService';
 
 export default function SettingsScreen() {
-  const { companion, updateCompanion, isPremium, setIsPremium } = useAppState();
+  const { companion, updateCompanion, isPremium, setIsPremium, selectedVoice, setSelectedVoice } = useAppState();
   const [showSubscriptionOptions, setShowSubscriptionOptions] = useState(false);
   const [showNotificationPermissionPrompt, setShowNotificationPermissionPrompt] = useState(false);
+  const [showVoiceModal, setShowVoiceModal] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<Speech.Voice[]>([]);
+
+  useEffect(() => {
+    Speech.getAvailableVoicesAsync()
+      .then(setAvailableVoices)
+      .catch(() => {});
+  }, []);
   
   const subscriptionPlans = [
     { id: 'weekly', name: 'Weekly', price: '€6.99', period: 'week' },
@@ -197,6 +206,19 @@ export default function SettingsScreen() {
             </View>
             <ChevronRight size={20} color="#CCCCCC" />
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.settingItem} onPress={() => setShowVoiceModal(true)}>
+            <View style={styles.settingIconContainer}>
+              <Mic size={20} color="#FF6B8A" />
+            </View>
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Voice Accent</Text>
+              <Text style={styles.settingDescription}>
+                {selectedVoice ? availableVoices.find(v => v.identifier === selectedVoice)?.name : 'System default'}
+              </Text>
+            </View>
+            <ChevronRight size={20} color="#CCCCCC" />
+          </TouchableOpacity>
         </View>
         
         <View style={styles.section}>
@@ -282,6 +304,40 @@ export default function SettingsScreen() {
         onClose={() => setShowNotificationPermissionPrompt(false)}
         onPermissionChange={handleNotificationPermissionChange}
       />
+
+      <Modal visible={showVoiceModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.voiceModalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Voice</Text>
+              <TouchableOpacity onPress={() => setShowVoiceModal(false)}>
+                <X size={24} color="#666666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ maxHeight: 300 }}>
+              {availableVoices.map((voice) => (
+                <TouchableOpacity
+                  key={voice.identifier}
+                  style={styles.voiceOption}
+                  onPress={() => {
+                    setSelectedVoice(voice.identifier);
+                    setShowVoiceModal(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.voiceOptionText,
+                      selectedVoice === voice.identifier && styles.selectedVoiceOptionText,
+                    ]}
+                  >
+                    {voice.name} ({voice.language})
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -519,5 +575,41 @@ const styles = StyleSheet.create({
   versionText: {
     color: '#999999',
     fontSize: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  voiceModalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  voiceOption: {
+    paddingVertical: 10,
+  },
+  voiceOptionText: {
+    fontSize: 14,
+    color: '#333333',
+  },
+  selectedVoiceOptionText: {
+    fontWeight: '700',
+    color: '#9C6ADE',
   },
 });
