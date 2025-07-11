@@ -9,7 +9,8 @@
     "test": "jest --runInBand",
     "lint": "eslint .",
     "docs": "node src/utils/generateDocs.js",
-    "build": "expo export"
+    "build": "expo export",
+    "backup": "node scripts/backupDatabase.js"
   },
   "keywords": [
     "express",

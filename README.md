@@ -295,6 +295,16 @@ mysoulmate-app/
 - [TypeScript Handbook](https://www.typescriptlang.org/docs)
 - [API Documentation](http://localhost:3000/api-docs) (en local)
 
+## 🗄 Sauvegarde de la base de données
+
+Pour créer une sauvegarde de la base SQLite, exécutez :
+
+```bash
+npm run backup
+```
+
+Les fichiers seront stockés dans le dossier `backups/` avec un horodatage.
+
 ## 📞 Support
 
 Pour obtenir de l'aide ou signaler des problèmes :
