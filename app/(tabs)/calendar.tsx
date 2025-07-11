@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, Modal, TextInput } from 'react-native';
-import { Calendar, Plus, Clock, Heart, Video, MessageCircle, Mic, X } from 'lucide-react-native';
+import { Calendar, Plus, Clock, Heart, Video, MessageCircle, Mic, X, Download } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
+import { calendarService } from '@/services/calendarService';
 
 interface CalendarEvent {
   id: string;
@@ -20,6 +21,8 @@ export default function CalendarScreen() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
   const [newEvent, setNewEvent] = useState<Partial<CalendarEvent>>({
     title: '',
     description: '',
@@ -104,6 +107,33 @@ export default function CalendarScreen() {
     setShowEventModal(false);
     updateInteractions(1);
     Alert.alert('Success', `Event scheduled! ${companion.name} is looking forward to it.`);
+  };
+
+  const handleImportEvents = async () => {
+    if (!importUrl) {
+      Alert.alert('Error', 'Please enter a calendar URL');
+      return;
+    }
+    try {
+      const imported = await calendarService.importFromUrl(importUrl);
+      const mapped = imported.map(evt => ({
+        id: evt.id,
+        title: evt.title,
+        description: evt.description,
+        date: evt.date,
+        time: evt.time,
+        type: 'reminder',
+        completed: false,
+      }));
+      setEvents(prev => [...prev, ...mapped].sort((a, b) =>
+        new Date(a.date + ' ' + a.time).getTime() - new Date(b.date + ' ' + b.time).getTime()
+      ));
+      setShowImportModal(false);
+      setImportUrl('');
+      Alert.alert('Success', 'Events imported');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to import events');
+    }
   };
 
   const handleCompleteEvent = (eventId: string) => {
@@ -248,9 +278,14 @@ export default function CalendarScreen() {
               day: 'numeric'
             })}
           </Text>
-          <TouchableOpacity style={styles.addEventButton} onPress={handleAddEvent}>
-            <Plus size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.importButton} onPress={() => setShowImportModal(true)}>
+              <Download size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.addEventButton} onPress={handleAddEvent}>
+              <Plus size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {selectedEvents.length === 0 ? (
@@ -421,6 +456,43 @@ export default function CalendarScreen() {
     </Modal>
   );
 
+  const renderImportModal = () => (
+    <Modal visible={showImportModal} animationType="slide" transparent>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Import Calendar</Text>
+            <TouchableOpacity onPress={() => setShowImportModal(false)}>
+              <X size={24} color="#666666" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalContent}>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Calendar URL</Text>
+              <TextInput
+                style={styles.formInput}
+                value={importUrl}
+                onChangeText={setImportUrl}
+                placeholder="https://example.com/calendar.ics"
+              />
+            </View>
+          </View>
+          <View style={styles.modalActions}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowImportModal(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={handleImportEvents}>
+              <Text style={styles.saveButtonText}>Import</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -430,8 +502,9 @@ export default function CalendarScreen() {
       {renderCalendar()}
       {renderEventsList()}
       {renderEventModal()}
+      {renderImportModal()}
 
-      <PremiumFeatureModal 
+      <PremiumFeatureModal
         visible={showPremiumModal} 
         onClose={() => setShowPremiumModal(false)}
         featureName="Unlimited Calendar Events"
@@ -550,6 +623,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333333',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  importButton: {
+    backgroundColor: '#9C6ADE',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   addEventButton: {
     backgroundColor: '#FF6B8A',

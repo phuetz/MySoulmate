@@ -192,5 +192,5 @@ Replace mock gift data in `data/giftData.ts` with data from backend API.
 - [x] Mode sombre automatique selon les preferences systeme
 - [x] Generation d'avatar par IA a partir de photos utilisateur
 - [x] Recommandations personnalisees de contenus (videos, musique, articles)
-- [ ] Integration avec calendriers externes pour rappels
+- [x] Integration avec calendriers externes pour rappels
 - [ ] Support des montres connectees pour notifications rapides
