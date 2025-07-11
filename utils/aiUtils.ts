@@ -127,13 +127,14 @@ const fallbackResponse = (userMessage: string, companion: any) => {
   const baseResponse =
     fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
   const score = sentiment.analyze(userMessage).score;
+  const affection = companion.affection || 0;
   if (score > 2) {
-    return `${baseResponse} I'm glad to hear you're feeling positive!`;
+    return `${baseResponse} I'm glad to hear you're feeling positive!${affection > 5 ? ' I feel our bond growing stronger.' : ''}`;
   }
   if (score < -2) {
-    return `${baseResponse} I'm sorry if something's bothering you.`;
+    return `${baseResponse} I'm sorry if something's bothering you.${affection > 5 ? ' I hope my gift made you smile.' : ''}`;
   }
-  return baseResponse;
+  return `${baseResponse}${affection > 5 ? ' 😊' : ''}`;
 };
 
 export interface ConversationMessage {
@@ -165,10 +166,11 @@ export const generateAIResponse = async (
       const personality = companion.personalityTraits
         .map((t: any) => t.name)
         .join(', ');
+      const affection = companion.affection || 0;
       const messages = [
         {
           role: 'system',
-          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. The user's current sentiment appears ${sentimentLabel}. Respond conversationally while taking this sentiment into account.`,
+          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. The user's current sentiment appears ${sentimentLabel}. Your affection level towards the user is ${affection}. Respond conversationally while taking this sentiment into account and showing more warmth as affection increases.`,
         },
         ...history,
         { role: 'user', content: userMessage },

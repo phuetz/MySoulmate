@@ -28,6 +28,7 @@ interface CompanionData {
   xp?: number; // Experience points
   achievements?: string[]; // Unlocked achievements
   videoCallHistory?: { duration: number; timestamp: string }[]; // Video call logs
+  affection?: number; // Affection level increased by gifts
 }
 
 interface AppStateContextType {
@@ -90,7 +91,8 @@ const defaultCompanion: CompanionData = {
   level: 1,
   xp: 150,
   achievements: ['first_conversation', 'early_bird'],
-  videoCallHistory: []
+  videoCallHistory: [],
+  affection: 0
 };
 
 // Provider component

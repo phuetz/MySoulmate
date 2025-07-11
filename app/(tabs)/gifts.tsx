@@ -76,13 +76,22 @@ export default function GiftsScreen() {
             
             const updatedActivities = [newActivity, ...(companion.recentActivities || []).slice(0, 9)];
             
+            // Determine affection points based on gift category
+            const affectionPoints =
+              gift.category === 'rare'
+                ? 3
+                : gift.category === 'exclusive'
+                  ? 5
+                  : 1;
+
             // Update companion data
             updateCompanion({
               ...companion,
               purchasedGifts: updatedPurchasedGifts,
               gifts: (companion.gifts || 0) + 1,
               recentActivities: updatedActivities,
-              interactions: (companion.interactions || 0) + 5 // Gift giving is a significant interaction
+              interactions: (companion.interactions || 0) + 5, // Gift giving is a significant interaction
+              affection: (companion.affection || 0) + affectionPoints
             });
             
             // Show success message
