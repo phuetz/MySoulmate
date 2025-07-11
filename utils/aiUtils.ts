@@ -128,13 +128,16 @@ const fallbackResponse = (userMessage: string, companion: any) => {
     fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
   const score = sentiment.analyze(userMessage).score;
   const affection = companion.affection || 0;
+  const effects = (companion.activeGiftEffects || [])
+    .map((e: any) => e.description)
+    .join(', ');
   if (score > 2) {
-    return `${baseResponse} I'm glad to hear you're feeling positive!${affection > 5 ? ' I feel our bond growing stronger.' : ''}`;
+    return `${baseResponse} I'm glad to hear you're feeling positive!${affection > 5 ? ' I feel our bond growing stronger.' : ''}${effects ? ' ' + effects : ''}`;
   }
   if (score < -2) {
-    return `${baseResponse} I'm sorry if something's bothering you.${affection > 5 ? ' I hope my gift made you smile.' : ''}`;
+    return `${baseResponse} I'm sorry if something's bothering you.${affection > 5 ? ' I hope my gift made you smile.' : ''}${effects ? ' ' + effects : ''}`;
   }
-  return `${baseResponse}${affection > 5 ? ' 😊' : ''}`;
+  return `${baseResponse}${affection > 5 ? ' 😊' : ''}${effects ? ' ' + effects : ''}`;
 };
 
 export interface ConversationMessage {
@@ -167,10 +170,13 @@ export const generateAIResponse = async (
         .map((t: any) => t.name)
         .join(', ');
       const affection = companion.affection || 0;
+      const activeEffects = (companion.activeGiftEffects || [])
+        .map((e: any) => e.description)
+        .join(', ');
       const messages = [
         {
           role: 'system',
-          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. The user's current sentiment appears ${sentimentLabel}. Your affection level towards the user is ${affection}. Respond conversationally while taking this sentiment into account and showing more warmth as affection increases.`,
+          content: `You are ${companion.name}, an AI companion with the following personality traits: ${personality}. ${activeEffects ? `Active gift effects: ${activeEffects}. ` : ''}The user's current sentiment appears ${sentimentLabel}. Your affection level towards the user is ${affection}. Respond conversationally while taking this sentiment into account and showing more warmth as affection increases.`,
         },
         ...history,
         { role: 'user', content: userMessage },

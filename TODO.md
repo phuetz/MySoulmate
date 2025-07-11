@@ -54,7 +54,7 @@
 
 - [ ] Connect to payment processing for virtual currency
 - [x] Implement gift inventory management
-- [ ] Add gift effects on companion behavior and responses
+ - [x] Add gift effects on companion behavior and responses
 - [ ] Implement special event/seasonal gifts
 
 ### Notification System
