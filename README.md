@@ -172,6 +172,7 @@ npm run dev
 2. **Accéder à la documentation API**
 - API: `http://localhost:3000`
 - Documentation Swagger: `http://localhost:3000/api-docs`
+ - Documentation statique générée: ouvrir `docs/index.html` après avoir exécuté `npm run docs`
 
 3. **Configurer l'URL de l'API côté application**
    - Par défaut, l'application mobile pointe vers `http://localhost:3000/api/v1`.
