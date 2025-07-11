@@ -1,0 +1,846 @@
+{
+  "swaggerUi": {
+    "serve": [
+      null,
+      null
+    ]
+  },
+  "specs": {
+    "openapi": "3.0.0",
+    "info": {
+      "title": "API RESTful Node.js",
+      "version": "1.0.0",
+      "description": "Documentation de l'API RESTful avec Express.js et SQLite",
+      "contact": {
+        "name": "Support API",
+        "email": "support@api.com"
+      }
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000/api/v1",
+        "description": "Serveur de développement - API v1"
+      }
+    ],
+    "components": {
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    },
+    "tags": [
+      {
+        "name": "Authentication",
+        "description": "Opérations liées à l'authentification"
+      },
+      {
+        "name": "Users",
+        "description": "Opérations liées aux utilisateurs"
+      },
+      {
+        "name": "Products",
+        "description": "Opérations liées aux produits"
+      },
+      {
+        "name": "Categories",
+        "description": "Opérations liées aux catégories"
+      },
+      {
+        "name": "Recommendations",
+        "description": "Contenus recommandés pour l'utilisateur"
+      }
+    ],
+    "paths": {
+      "/api/auth/register": {
+        "post": {
+          "summary": "Inscrire un nouvel utilisateur",
+          "tags": [
+            "Authentication"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "email",
+                    "password"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Utilisateur créé avec succès"
+            },
+            "400": {
+              "description": "Données invalides ou email déjà utilisé"
+            }
+          }
+        }
+      },
+      "/api/auth/login": {
+        "post": {
+          "summary": "Connecter un utilisateur",
+          "tags": [
+            "Authentication"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "email",
+                    "password"
+                  ],
+                  "properties": {
+                    "email": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Connexion réussie"
+            },
+            "401": {
+              "description": "Email ou mot de passe incorrect"
+            }
+          }
+        }
+      },
+      "/api/auth/refresh-token": {
+        "post": {
+          "summary": "Rafraîchir le token d'accès",
+          "tags": [
+            "Authentication"
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "refreshToken"
+                  ],
+                  "properties": {
+                    "refreshToken": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Nouveau token généré"
+            },
+            "401": {
+              "description": "Token invalide ou expiré"
+            }
+          }
+        }
+      },
+      "/api/auth/me": {
+        "get": {
+          "summary": "Obtenir les informations de l'utilisateur connecté",
+          "tags": [
+            "Authentication"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Données de l'utilisateur renvoyées avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            }
+          }
+        }
+      },
+      "/api/categories": {
+        "get": {
+          "summary": "Obtenir toutes les catégories",
+          "tags": [
+            "Categories"
+          ],
+          "responses": {
+            "200": {
+              "description": "Liste des catégories"
+            }
+          }
+        },
+        "post": {
+          "summary": "Créer une nouvelle catégorie",
+          "tags": [
+            "Categories"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "name"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Catégorie créée avec succès"
+            },
+            "400": {
+              "description": "Données invalides"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé - rôle admin requis"
+            }
+          }
+        }
+      },
+      "/api/categories/{id}": {
+        "get": {
+          "summary": "Obtenir une catégorie par ID avec ses produits",
+          "tags": [
+            "Categories"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID de la catégorie"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Détails de la catégorie avec ses produits"
+            },
+            "404": {
+              "description": "Catégorie non trouvée"
+            }
+          }
+        },
+        "put": {
+          "summary": "Mettre à jour une catégorie",
+          "tags": [
+            "Categories"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID de la catégorie"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "isActive": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Catégorie mise à jour avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé - rôle admin requis"
+            },
+            "404": {
+              "description": "Catégorie non trouvée"
+            }
+          }
+        },
+        "delete": {
+          "summary": "Supprimer une catégorie",
+          "tags": [
+            "Categories"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID de la catégorie"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Catégorie supprimée avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé - rôle admin requis"
+            },
+            "404": {
+              "description": "Catégorie non trouvée"
+            }
+          }
+        }
+      },
+      "/api/products": {
+        "get": {
+          "summary": "Obtenir tous les produits",
+          "tags": [
+            "Products"
+          ],
+          "parameters": [
+            {
+              "in": "query",
+              "name": "page",
+              "schema": {
+                "type": "integer",
+                "default": 1
+              },
+              "description": "Numéro de page"
+            },
+            {
+              "in": "query",
+              "name": "limit",
+              "schema": {
+                "type": "integer",
+                "default": 10
+              },
+              "description": "Nombre d'éléments par page"
+            },
+            {
+              "in": "query",
+              "name": "categoryId",
+              "schema": {
+                "type": "string"
+              },
+              "description": "Filtrer par catégorie"
+            },
+            {
+              "in": "query",
+              "name": "minPrice",
+              "schema": {
+                "type": "number"
+              },
+              "description": "Prix minimum"
+            },
+            {
+              "in": "query",
+              "name": "maxPrice",
+              "schema": {
+                "type": "number"
+              },
+              "description": "Prix maximum"
+            },
+            {
+              "in": "query",
+              "name": "search",
+              "schema": {
+                "type": "string"
+              },
+              "description": "Recherche par nom"
+            },
+            {
+              "in": "query",
+              "name": "sortBy",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "name",
+                  "price",
+                  "createdAt"
+                ]
+              },
+              "description": "Champ de tri"
+            },
+            {
+              "in": "query",
+              "name": "sortOrder",
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              },
+              "description": "Ordre de tri"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Liste des produits"
+            }
+          }
+        },
+        "post": {
+          "summary": "Créer un nouveau produit",
+          "tags": [
+            "Products"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "price"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "number"
+                    },
+                    "stock": {
+                      "type": "integer"
+                    },
+                    "imageUrl": {
+                      "type": "string"
+                    },
+                    "categoryId": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Produit créé avec succès"
+            },
+            "400": {
+              "description": "Données invalides"
+            },
+            "401": {
+              "description": "Non authentifié"
+            }
+          }
+        }
+      },
+      "/api/products/{id}": {
+        "get": {
+          "summary": "Obtenir un produit par ID",
+          "tags": [
+            "Products"
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID du produit"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Détails du produit"
+            },
+            "404": {
+              "description": "Produit non trouvé"
+            }
+          }
+        },
+        "put": {
+          "summary": "Mettre à jour un produit",
+          "tags": [
+            "Products"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID du produit"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "number"
+                    },
+                    "stock": {
+                      "type": "integer"
+                    },
+                    "imageUrl": {
+                      "type": "string"
+                    },
+                    "categoryId": {
+                      "type": "string"
+                    },
+                    "isActive": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Produit mis à jour avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé"
+            },
+            "404": {
+              "description": "Produit non trouvé"
+            }
+          }
+        },
+        "delete": {
+          "summary": "Supprimer un produit",
+          "tags": [
+            "Products"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID du produit"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Produit supprimé avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé"
+            },
+            "404": {
+              "description": "Produit non trouvé"
+            }
+          }
+        }
+      },
+      "/api/recommendations": {
+        "get": {
+          "summary": "Obtenir des recommandations personnalisees de contenus",
+          "tags": [
+            "Recommendations"
+          ],
+          "responses": {
+            "200": {
+              "description": "Liste des recommandations"
+            }
+          }
+        }
+      },
+      "/api/users": {
+        "get": {
+          "summary": "Obtenir tous les utilisateurs",
+          "tags": [
+            "Users"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "query",
+              "name": "page",
+              "schema": {
+                "type": "integer",
+                "default": 1
+              },
+              "description": "Numéro de page"
+            },
+            {
+              "in": "query",
+              "name": "limit",
+              "schema": {
+                "type": "integer",
+                "default": 10
+              },
+              "description": "Nombre d'éléments par page"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Liste des utilisateurs"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé - rôle admin requis"
+            }
+          }
+        }
+      },
+      "/api/users/{id}": {
+        "get": {
+          "summary": "Obtenir un utilisateur par ID",
+          "tags": [
+            "Users"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID de l'utilisateur"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Données de l'utilisateur"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé - rôle admin requis"
+            },
+            "404": {
+              "description": "Utilisateur non trouvé"
+            }
+          }
+        },
+        "put": {
+          "summary": "Mettre à jour un utilisateur",
+          "tags": [
+            "Users"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID de l'utilisateur"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "user",
+                        "admin"
+                      ]
+                    },
+                    "isActive": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Utilisateur mis à jour avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé"
+            },
+            "404": {
+              "description": "Utilisateur non trouvé"
+            }
+          }
+        },
+        "delete": {
+          "summary": "Supprimer un utilisateur",
+          "tags": [
+            "Users"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "description": "ID de l'utilisateur"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Utilisateur supprimé avec succès"
+            },
+            "401": {
+              "description": "Non authentifié"
+            },
+            "403": {
+              "description": "Non autorisé"
+            },
+            "404": {
+              "description": "Utilisateur non trouvé"
+            }
+          }
+        }
+      }
+    }
+  }
+}
