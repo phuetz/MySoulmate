@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image, ScrollView, Switch } from 'react-native';
-import { Heart, User, Book, Brain, Gift, Star } from 'lucide-react-native';
+import { Heart, User, Book, Brain, Gift, Star, Plus, Minus } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import { personalityTraits, avatarOptions } from '@/data/companionData';
@@ -39,9 +39,26 @@ export default function CustomizeScreen() {
       if (newTraits.length >= 5) {
         newTraits.pop();
       }
-      newTraits.push(trait);
+      newTraits.push({ ...trait, intensity: 3 });
     }
     
+    setSelectedTraits(newTraits);
+    updateCompanion({
+      ...companion,
+      personalityTraits: newTraits
+    });
+  };
+
+  const adjustTraitIntensity = (traitId, delta) => {
+    const newTraits = selectedTraits.map(t => {
+      if (t.id === traitId) {
+        let intensity = (t.intensity || 3) + delta;
+        if (intensity < 1) intensity = 1;
+        if (intensity > 5) intensity = 5;
+        return { ...t, intensity };
+      }
+      return t;
+    });
     setSelectedTraits(newTraits);
     updateCompanion({
       ...companion,
@@ -169,28 +186,43 @@ export default function CustomizeScreen() {
             
             <View style={styles.traitsContainer}>
               {personalityTraits.map((trait) => {
-                const isSelected = selectedTraits.some(t => t.id === trait.id);
+                const selected = selectedTraits.find(t => t.id === trait.id);
+                const isSelected = !!selected;
                 return (
-                  <TouchableOpacity
-                    key={trait.id}
-                    style={[
-                      styles.traitItem,
-                      isSelected && styles.selectedTraitItem
-                    ]}
-                    onPress={() => handleTraitToggle(trait)}
-                  >
-                    <Text style={[
-                      styles.traitName,
-                      isSelected && styles.selectedTraitName
-                    ]}>
-                      {trait.name}
-                    </Text>
-                    {trait.premium && !isPremium && (
-                      <View style={styles.traitPremiumBadge}>
-                        <Star size={10} color="#FFFFFF" />
+                  <View key={trait.id} style={styles.traitWrapper}>
+                    <TouchableOpacity
+                      style={[
+                        styles.traitItem,
+                        isSelected && styles.selectedTraitItem
+                      ]}
+                      onPress={() => handleTraitToggle(trait)}
+                    >
+                      <Text
+                        style={[
+                          styles.traitName,
+                          isSelected && styles.selectedTraitName
+                        ]}
+                      >
+                        {trait.name}
+                      </Text>
+                      {trait.premium && !isPremium && (
+                        <View style={styles.traitPremiumBadge}>
+                          <Star size={10} color="#FFFFFF" />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                    {isSelected && (
+                      <View style={styles.intensityControls}>
+                        <TouchableOpacity onPress={() => adjustTraitIntensity(trait.id, -1)}>
+                          <Minus size={12} color="#333" />
+                        </TouchableOpacity>
+                        <Text style={styles.intensityValue}>{selected.intensity}</Text>
+                        <TouchableOpacity onPress={() => adjustTraitIntensity(trait.id, 1)}>
+                          <Plus size={12} color="#333" />
+                        </TouchableOpacity>
                       </View>
                     )}
-                  </TouchableOpacity>
+                  </View>
                 );
               })}
             </View>
@@ -476,11 +508,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 16,
     backgroundColor: '#F0F0F0',
-    marginRight: 8,
-    marginBottom: 8,
   },
   selectedTraitItem: {
     backgroundColor: '#FF6B8A',
+  },
+  traitWrapper: {
+    marginRight: 8,
+    marginBottom: 8,
+    alignItems: 'center',
   },
   traitName: {
     color: '#333333',
@@ -488,6 +523,16 @@ const styles = StyleSheet.create({
   },
   selectedTraitName: {
     color: '#FFFFFF',
+  },
+  intensityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  intensityValue: {
+    marginHorizontal: 4,
+    fontSize: 12,
+    color: '#333333',
   },
   traitPremiumBadge: {
     position: 'absolute',
