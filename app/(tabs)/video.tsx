@@ -1,24 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { Video as VideoIcon, Mic, MicOff, PhoneOff, RotateCcw } from 'lucide-react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+} from 'react-native';
+import {
+  Video as VideoIcon,
+  Mic,
+  MicOff,
+  PhoneOff,
+  RotateCcw,
+  Circle,
+  StopCircle,
+} from 'lucide-react-native';
+import { Camera, CameraType, useCameraPermissions } from 'expo-camera';
+import { Video } from 'expo-av';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function VideoScreen() {
-  const { companion, isPremium, updateInteractions, addVideoCall } = useAppState();
+  const { companion, isPremium, updateInteractions, addVideoCall } =
+    useAppState();
   const [isCallActive, setIsCallActive] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [cameraPosition, setCameraPosition] = useState('front');
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<Camera | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedVideos, setRecordedVideos] = useState<string[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isCallActive) {
       intervalRef.current = setInterval(() => {
         setCallDuration((prev) => prev + 1);
-        
+
         // Increment interactions counter every minute
         if (callDuration > 0 && callDuration % 60 === 0) {
           updateInteractions(3); // Video calls count as more meaningful interactions
@@ -30,7 +52,7 @@ export default function VideoScreen() {
         intervalRef.current = null;
       }
     }
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -39,7 +61,14 @@ export default function VideoScreen() {
     };
   }, [isCallActive, callDuration]);
 
-  const startCall = () => {
+  const startCall = async () => {
+    if (!permission || !permission.granted) {
+      const perm = await requestPermission();
+      if (!perm.granted) {
+        return;
+      }
+    }
+
     if (!isPremium) {
       // Allow a short free preview before showing premium modal
       setIsCallActive(true);
@@ -54,6 +83,9 @@ export default function VideoScreen() {
 
   const endCall = () => {
     setIsCallActive(false);
+    if (isRecording) {
+      stopRecording();
+    }
     if (callDuration > 0) {
       addVideoCall(callDuration);
     }
@@ -65,7 +97,26 @@ export default function VideoScreen() {
   };
 
   const flipCamera = () => {
-    setCameraPosition(prev => prev === 'front' ? 'back' : 'front');
+    setCameraPosition((prev) => (prev === 'front' ? 'back' : 'front'));
+  };
+
+  const startRecording = async () => {
+    if (!cameraRef.current) return;
+    try {
+      setIsRecording(true);
+      const video = await cameraRef.current.recordAsync();
+      setRecordedVideos((prev) => [video.uri, ...prev]);
+    } catch (err) {
+      console.log('Failed to record video', err);
+    } finally {
+      setIsRecording(false);
+    }
+  };
+
+  const stopRecording = () => {
+    if (cameraRef.current && isRecording) {
+      cameraRef.current.stopRecording();
+    }
   };
 
   const formatTime = (seconds) => {
@@ -80,39 +131,42 @@ export default function VideoScreen() {
         // Active call view
         <View style={styles.callContainer}>
           {/* Companion video (full screen) */}
-          <Image 
-            source={{ uri: companion.videoUrl || companion.avatarUrl }} 
+          <Image
+            source={{ uri: companion.videoUrl || companion.avatarUrl }}
             style={styles.remoteVideo}
             resizeMode="cover"
           />
-          
+
           {/* Overlay gradient for better UI visibility */}
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.7)']}
             style={styles.controlsGradient}
             pointerEvents="none"
           />
-          
+
           {/* Call duration display */}
           <View style={styles.durationContainer}>
             <Text style={styles.durationText}>{formatTime(callDuration)}</Text>
           </View>
-          
+
           {/* User video (small overlay) */}
           <View style={styles.localVideoContainer}>
-            <Image 
-              source={{ uri: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg' }} 
+            <Camera
+              ref={cameraRef}
               style={styles.localVideo}
-              resizeMode="cover"
+              type={
+                cameraPosition === 'front' ? CameraType.front : CameraType.back
+              }
+              ratio="16:9"
             />
           </View>
-          
+
           {/* Call controls */}
           <View style={styles.activeCallControls}>
             <TouchableOpacity style={styles.controlButton} onPress={flipCamera}>
               <RotateCcw size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={styles.controlButton} onPress={toggleMute}>
               {isMuted ? (
                 <MicOff size={24} color="#FFFFFF" />
@@ -120,7 +174,18 @@ export default function VideoScreen() {
                 <Mic size={24} color="#FFFFFF" />
               )}
             </TouchableOpacity>
-            
+
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={isRecording ? stopRecording : startRecording}
+            >
+              {isRecording ? (
+                <StopCircle size={24} color="#FFFFFF" />
+              ) : (
+                <Circle size={24} color="#FF3B30" />
+              )}
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
               <PhoneOff size={28} color="#FFFFFF" />
             </TouchableOpacity>
@@ -132,33 +197,54 @@ export default function VideoScreen() {
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Video Call</Text>
           </View>
-          
+
           <View style={styles.companionContainer}>
-            <Image 
-              source={{ uri: companion.avatarUrl }} 
+            <Image
+              source={{ uri: companion.avatarUrl }}
               style={styles.avatarLarge}
             />
             <Text style={styles.companionName}>{companion.name}</Text>
             <Text style={styles.companionStatus}>Available for video call</Text>
           </View>
-          
+
           <View style={styles.infoContainer}>
-            <Text style={styles.infoTitle}>Video Call with {companion.name}</Text>
+            <Text style={styles.infoTitle}>
+              Video Call with {companion.name}
+            </Text>
             <Text style={styles.infoText}>
-              Connect face-to-face with your AI companion through a simulated video call experience.
-              {!isPremium && " Free preview limited to 30 seconds."}
+              Connect face-to-face with your AI companion through a simulated
+              video call experience.
+              {!isPremium && ' Free preview limited to 30 seconds.'}
             </Text>
           </View>
-          
+
           <TouchableOpacity style={styles.startCallButton} onPress={startCall}>
             <VideoIcon size={24} color="#FFFFFF" style={styles.startCallIcon} />
             <Text style={styles.startCallText}>Start Video Call</Text>
           </TouchableOpacity>
+
+          {recordedVideos.length > 0 && (
+            <View style={styles.recordingsContainer}>
+              {recordedVideos.map((uri, index) => (
+                <View key={index} style={styles.recordingItem}>
+                  <Video
+                    source={{ uri }}
+                    style={styles.recordingVideo}
+                    useNativeControls
+                    resizeMode="cover"
+                  />
+                  <Text style={styles.recordingLabel}>
+                    Recording {index + 1}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       )}
-      
-      <PremiumFeatureModal 
-        visible={showPremiumModal} 
+
+      <PremiumFeatureModal
+        visible={showPremiumModal}
         onClose={() => setShowPremiumModal(false)}
         featureName="Unlimited Video Calls"
         description="Enjoy unlimited video calls with your AI companion and unlock more realistic interactions."
@@ -335,5 +421,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 12,
+  },
+  recordingsContainer: {
+    marginTop: 30,
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  recordingItem: {
+    marginBottom: 20,
+  },
+  recordingVideo: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    backgroundColor: '#000',
+  },
+  recordingLabel: {
+    color: '#333',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
