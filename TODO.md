@@ -32,7 +32,7 @@
 - [x] Implement real voice recording and playback
 - [x] Connect to a Text-to-Speech API for AI voice responses
 - [x] Add speech recognition for voice-to-text
-- [ ] Implement voice emotion detection
+- [x] Implement voice emotion detection
 - [x] Support different voice models/accents
 
 ### Video Feature

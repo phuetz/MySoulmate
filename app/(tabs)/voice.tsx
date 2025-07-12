@@ -12,6 +12,7 @@ import * as Speech from 'expo-speech';
 import Voice from '@react-native-community/voice';
 import { generateAIResponse } from '@/utils/aiUtils';
 import Sentiment from 'sentiment';
+import { getEmotionFromMeterings } from '@/utils/voiceEmotion';
 import {
   Mic,
   MicOff,
@@ -34,6 +35,7 @@ export default function VoiceScreen() {
   >([]);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordings, setRecordings] = useState<string[]>([]);
+  const [meteringValues, setMeteringValues] = useState<number[]>([]);
   const [lastEmotion, setLastEmotion] = useState<'positive' | 'neutral' | 'negative'>('neutral');
   const transcriptRef = useRef('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -97,6 +99,22 @@ export default function VoiceScreen() {
     };
   }, [isRecording, timeElapsed]);
 
+  useEffect(() => {
+    if (isRecording && recording) {
+      const id = setInterval(async () => {
+        try {
+          const status = await recording.getStatusAsync();
+          if (status.metering != null) {
+            setMeteringValues((vals) => [...vals.slice(-20), status.metering as number]);
+          }
+        } catch (err) {
+          console.warn('Failed to get metering', err);
+        }
+      }, 500);
+      return () => clearInterval(id);
+    }
+  }, [isRecording, recording]);
+
   const startRecording = async () => {
     setTimeElapsed(0);
     const { status } = await Audio.requestPermissionsAsync();
@@ -110,6 +128,7 @@ export default function VoiceScreen() {
         Audio.RecordingOptionsPresets.HIGH_QUALITY,
       );
       setRecording(recording);
+      setMeteringValues([]);
       if (Platform.OS !== 'web') {
         transcriptRef.current = '';
         try {
@@ -140,11 +159,13 @@ export default function VoiceScreen() {
         console.error('Voice stop error', err);
       }
       const text = transcriptRef.current.trim();
+      const voiceEmotion = getEmotionFromMeterings(meteringValues);
+      let emotion = voiceEmotion;
       if (text.length > 0) {
         const score = sentiment.analyze(text).score;
-        if (score > 2) setLastEmotion('positive');
-        else if (score < -2) setLastEmotion('negative');
-        else setLastEmotion('neutral');
+        if (score > 2) emotion = 'positive';
+        else if (score < -2) emotion = 'negative';
+        else emotion = voiceEmotion;
         setConversation((prev) => [...prev, { from: 'user', text }]);
         updateInteractions(1);
         transcriptRef.current = '';
@@ -162,6 +183,7 @@ export default function VoiceScreen() {
           console.error('Failed to generate AI response', err);
         }
       }
+      setLastEmotion(emotion);
     }
     setRecording(null);
     setIsRecording(false);
