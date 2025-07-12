@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface CalendarEvent {
   id: string;
@@ -10,7 +10,7 @@ export interface CalendarEvent {
 
 export const calendarService = {
   async importFromUrl(url: string): Promise<CalendarEvent[]> {
-    const response = await api.get('/calendar/import', { params: { url } });
+    const response = await getWithCache('/calendar/import', { params: { url } });
     return response.data.events;
   }
 };

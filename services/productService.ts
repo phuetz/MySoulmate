@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface Product {
   id: string;
@@ -45,12 +45,12 @@ export const productService = {
       }
     });
     
-    const response = await api.get(`/products?${params.toString()}`);
+    const response = await getWithCache(`/products?${params.toString()}`);
     return response.data;
   },
   
   async getProductById(id: string): Promise<Product> {
-    const response = await api.get(`/products/${id}`);
+    const response = await getWithCache(`/products/${id}`);
     return response.data;
   },
   

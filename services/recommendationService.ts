@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface Recommendation {
   id: string;
@@ -11,7 +11,7 @@ export interface Recommendation {
 
 export const recommendationService = {
   async getRecommendations(): Promise<Recommendation[]> {
-    const response = await api.get('/recommendations');
+    const response = await getWithCache('/recommendations');
     if (response.data.recommendations) return response.data.recommendations;
     return response.data;
   }

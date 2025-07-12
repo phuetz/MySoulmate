@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface Companion {
   id: string;
@@ -30,7 +30,7 @@ export interface Companion {
 
 export const companionService = {
   async getCompanion(): Promise<Companion> {
-    const response = await api.get('/companion');
+    const response = await getWithCache('/companion');
     return response.data.companion || response.data;
   }
 };

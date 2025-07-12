@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface User {
   id: string;
@@ -31,12 +31,12 @@ export const userService = {
       }
     });
     
-    const response = await api.get(`/users?${params.toString()}`);
+    const response = await getWithCache(`/users?${params.toString()}`);
     return response.data;
   },
   
   async getUserById(id: string): Promise<User> {
-    const response = await api.get(`/users/${id}`);
+    const response = await getWithCache(`/users/${id}`);
     return response.data;
   },
   
