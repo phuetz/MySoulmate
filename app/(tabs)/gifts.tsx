@@ -13,12 +13,30 @@ export default function GiftsScreen() {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showCurrencyOptions, setShowCurrencyOptions] = useState(false);
   const [gifts, setGifts] = useState<GiftType[]>([]);
+  const [seasonalGifts, setSeasonalGifts] = useState<GiftType[]>([]);
+
+  const getCurrentEvent = () => {
+    const month = new Date().getMonth();
+    if (month === 1) return 'valentines';
+    if (month >= 5 && month <= 7) return 'summer';
+    if (month === 11) return 'christmas';
+    return '';
+  };
 
   useEffect(() => {
     const load = async () => {
       try {
         const data = await giftService.getGifts();
         setGifts(data);
+        const currentEvent = getCurrentEvent();
+        if (currentEvent) {
+          try {
+            const seasonal = await giftService.getSeasonalGifts(currentEvent);
+            setSeasonalGifts(seasonal);
+          } catch (err) {
+            console.warn('Failed to load seasonal gifts', err);
+          }
+        }
       } catch (err) {
         console.warn('Failed to load gifts', err);
       }
@@ -28,8 +46,11 @@ export default function GiftsScreen() {
 
   const filteredGifts = gifts.filter(gift => {
     if (selectedFilter === 'all') return true;
+    if (selectedFilter === 'seasonal') return false;
     return gift.category === selectedFilter;
   });
+
+  const displayedGifts = selectedFilter === 'seasonal' ? seasonalGifts : filteredGifts;
 
   const purchasedGifts = companion.gifts ?
     gifts.filter(gift => companion.purchasedGifts?.includes(gift.id)) :
@@ -250,7 +271,7 @@ export default function GiftsScreen() {
                 </Text>
               </TouchableOpacity>
               
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.filterOption, selectedFilter === 'exclusive' && styles.selectedFilter]}
                 onPress={() => setSelectedFilter('exclusive')}
               >
@@ -258,11 +279,20 @@ export default function GiftsScreen() {
                   Exclusive
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterOption, selectedFilter === 'seasonal' && styles.selectedFilter]}
+                onPress={() => setSelectedFilter('seasonal')}
+              >
+                <Text style={[styles.filterText, selectedFilter === 'seasonal' && styles.selectedFilterText]}>
+                  Seasonal
+                </Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
           
           <FlatList
-            data={filteredGifts}
+            data={displayedGifts}
             renderItem={renderGiftItem}
             keyExtractor={item => item.id}
             contentContainerStyle={styles.giftsList}

@@ -46,6 +46,13 @@ describe('Gift Routes', () => {
     expect(res.body).toHaveProperty('event', 'testfest');
   });
 
+  it('should get gifts by event', async () => {
+    const res = await request(app).get('/api/v1/gifts/event/testfest');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.gifts.length).toBe(1);
+    expect(res.body.gifts[0].id).toBe(giftId);
+  });
+
   it('should update a gift', async () => {
     const res = await request(app)
       .put(`/api/v1/gifts/${giftId}`)
