@@ -5,7 +5,7 @@ export interface Companion {
   name: string;
   avatarUrl: string;
   videoUrl: string;
-  personalityTraits: { id: number; name: string }[];
+  personalityTraits: { id: number; name: string; intensity: number }[];
   interactions: number;
   messages: number;
   gifts: number;
