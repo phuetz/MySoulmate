@@ -153,6 +153,9 @@ exports.validateCategory = [
   body('category')
     .optional()
     .isIn(['common','rare','exclusive']).withMessage('Categorie invalide'),
+  body('event')
+    .optional()
+    .isString().withMessage('event doit etre une chaine de caracteres'),
   body('effect')
     .optional()
     .isString().withMessage("L'effet doit etre une chaine de caracteres")

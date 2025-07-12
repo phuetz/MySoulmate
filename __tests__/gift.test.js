@@ -31,10 +31,11 @@ describe('Gift Routes', () => {
     const res = await request(app)
       .post('/api/v1/gifts')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Test Gift', price: 10, category: 'common' });
+      .send({ name: 'Test Gift', price: 10, category: 'common', event: 'testfest' });
 
     expect(res.statusCode).toBe(201);
     expect(res.body).toHaveProperty('gift');
+    expect(res.body.gift.event).toBe('testfest');
     giftId = res.body.gift.id;
   });
 
@@ -42,6 +43,7 @@ describe('Gift Routes', () => {
     const res = await request(app).get(`/api/v1/gifts/${giftId}`);
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('id', giftId);
+    expect(res.body).toHaveProperty('event', 'testfest');
   });
 
   it('should update a gift', async () => {
