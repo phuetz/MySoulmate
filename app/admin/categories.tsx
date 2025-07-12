@@ -12,33 +12,61 @@ export default function CategoriesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
   useEffect(() => {
-    fetchCategories(searchQuery);
+    fetchCategories(searchQuery, 1);
   }, [searchQuery]);
 
-  const fetchCategories = async (search?: string) => {
+  const fetchCategories = async (search?: string, page = 1) => {
     try {
-      setLoading(true);
-      const data = await categoryService.getCategories({ search });
-      setCategories(data.categories || data);
-      setFilteredCategories(data.categories || data);
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      const data = await categoryService.getCategories({ search, page });
+      setPagination({
+        currentPage: data.currentPage || page,
+        totalPages: data.totalPages || 1,
+        totalItems: data.totalItems || (data.categories?.length ?? data.length),
+      });
+      if (page === 1) {
+        setCategories(data.categories || data);
+      } else {
+        setCategories(prev => [...prev, ...(data.categories || data)]);
+      }
+      setFilteredCategories(prev =>
+        page === 1 ? (data.categories || data) : [...prev, ...(data.categories || data)]
+      );
     } catch (error) {
       console.error('Error fetching categories:', error);
       Alert.alert('Error', 'Failed to load categories');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
       setRefreshing(false);
     }
   };
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchCategories(searchQuery);
+    fetchCategories(searchQuery, 1);
+  };
+
+  const handleLoadMore = () => {
+    if (pagination.currentPage < pagination.totalPages && !loadingMore) {
+      fetchCategories(searchQuery, pagination.currentPage + 1);
+    }
   };
 
   const handleEdit = (categoryId: string) => {
@@ -107,6 +135,8 @@ export default function CategoriesScreen() {
           onDelete={handleDelete}
           refreshing={refreshing}
           onRefresh={handleRefresh}
+          onLoadMore={handleLoadMore}
+          loadingMore={loadingMore}
         />
       ) : (
         <View style={styles.emptyContainer}>

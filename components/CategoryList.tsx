@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { Edit, Trash2, ShoppingBag } from 'lucide-react-native';
 import { Category } from '@/services/categoryService';
 
@@ -9,6 +9,8 @@ interface CategoryListProps {
   onDelete?: (id: string, name: string) => void;
   refreshing?: boolean;
   onRefresh?: () => void;
+  onLoadMore?: () => void;
+  loadingMore?: boolean;
 }
 
 export default function CategoryList({
@@ -17,6 +19,8 @@ export default function CategoryList({
   onDelete,
   refreshing = false,
   onRefresh,
+  onLoadMore,
+  loadingMore = false,
 }: CategoryListProps) {
   const renderItem = ({ item }: { item: Category }) => (
     <View style={styles.categoryItem}>
@@ -65,6 +69,13 @@ export default function CategoryList({
       refreshControl={onRefresh ? (
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       ) : undefined}
+      onEndReached={onLoadMore}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={
+        loadingMore ? (
+          <ActivityIndicator style={styles.loadMoreIndicator} color="#FF6B8A" />
+        ) : null
+      }
     />
   );
 }
@@ -146,6 +157,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadMoreIndicator: {
+    marginVertical: 16,
   },
 });
 
