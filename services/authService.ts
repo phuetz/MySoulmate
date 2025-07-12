@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface RegisterData {
@@ -50,7 +50,7 @@ export const authService = {
   },
   
   async getCurrentUser(): Promise<any> {
-    const response = await api.get('/auth/me');
+    const response = await getWithCache('/auth/me');
     return response.data.user;
   },
   

@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface Category {
   id: string;
@@ -17,12 +17,12 @@ export const categoryService = {
     sort?: string;
     order?: 'asc' | 'desc';
   } = {}): Promise<any> {
-    const response = await api.get('/categories', { params });
+    const response = await getWithCache('/categories', { params });
     return response.data;
   },
   
   async getCategoryById(id: string): Promise<Category> {
-    const response = await api.get(`/categories/${id}`);
+    const response = await getWithCache(`/categories/${id}`);
     return response.data;
   },
   

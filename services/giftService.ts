@@ -1,4 +1,4 @@
-import api from './api';
+import api, { getWithCache } from './api';
 
 export interface Gift {
   id: string;
@@ -13,7 +13,7 @@ export interface Gift {
 
 export const giftService = {
   async getGifts(): Promise<Gift[]> {
-    const response = await api.get('/gifts');
+    const response = await getWithCache('/gifts');
     if (response.data.gifts) return response.data.gifts;
     return response.data;
   }
