@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const statusMonitor = require('express-status-monitor');
+const client = require('prom-client');
 const swaggerSetup = require('./utils/swagger');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 const logger = require('./utils/logger');
@@ -15,6 +17,17 @@ const versionedRoutes = require('./routes/versionedRoutes');
 
 // Initialisation de l'application Express
 const app = express();
+
+// Monitoring Dashboard
+const monitor = statusMonitor({ path: '/status' });
+app.use(monitor);
+// Collect default metrics for Prometheus
+client.collectDefaultMetrics();
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 
 // Middleware de base
 app.use(cors());
