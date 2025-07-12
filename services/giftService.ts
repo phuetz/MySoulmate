@@ -17,5 +17,10 @@ export const giftService = {
     const response = await getWithCache('/gifts');
     if (response.data.gifts) return response.data.gifts;
     return response.data;
+  },
+  async getSeasonalGifts(event: string): Promise<Gift[]> {
+    const response = await getWithCache(`/gifts/event/${event}`);
+    if (response.data.gifts) return response.data.gifts;
+    return response.data;
   }
 };

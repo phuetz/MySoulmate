@@ -61,3 +61,14 @@ exports.deleteGift = async (req, res, next) => {
   }
 };
 
+exports.getGiftsByEvent = async (req, res, next) => {
+  try {
+    const { event } = req.params;
+    const gifts = await Gift.findAll({ where: { event }, order: [['createdAt', 'ASC']] });
+    res.status(200).json({ gifts });
+  } catch (error) {
+    logger.error(`Erreur lors de la recuperation des cadeaux pour l'evenement ${req.params.event}:`, error);
+    next(error);
+  }
+};
+
