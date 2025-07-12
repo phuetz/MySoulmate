@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import CachedImage from './CachedImage';
 import { productService, Product, ProductFilter } from '@/services/productService';
 
 interface ProductListProps {
@@ -55,10 +56,9 @@ export default function ProductList({ filters = {}, onProductPress }: ProductLis
       style={styles.productCard}
       onPress={() => onProductPress && onProductPress(item)}
     >
-      <Image 
-        source={{ uri: item.imageUrl || 'https://via.placeholder.com/150' }} 
+      <CachedImage
+        uri={item.imageUrl || 'https://via.placeholder.com/150'}
         style={styles.productImage}
-        resizeMode="cover"
       />
       <View style={styles.productInfo}>
         <Text style={styles.productName}>{item.name}</Text>
