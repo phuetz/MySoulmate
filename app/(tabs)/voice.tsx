@@ -11,6 +11,7 @@ import { Audio } from 'expo-av';
 import * as Speech from 'expo-speech';
 import Voice from '@react-native-community/voice';
 import { generateAIResponse } from '@/utils/aiUtils';
+import Sentiment from 'sentiment';
 import {
   Mic,
   MicOff,
@@ -33,9 +34,11 @@ export default function VoiceScreen() {
   >([]);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordings, setRecordings] = useState<string[]>([]);
+  const [lastEmotion, setLastEmotion] = useState<'positive' | 'neutral' | 'negative'>('neutral');
   const transcriptRef = useRef('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sentiment = useRef(new Sentiment()).current;
 
   useEffect(() => {
     Voice.onSpeechResults = (e: any) => {
@@ -138,6 +141,10 @@ export default function VoiceScreen() {
       }
       const text = transcriptRef.current.trim();
       if (text.length > 0) {
+        const score = sentiment.analyze(text).score;
+        if (score > 2) setLastEmotion('positive');
+        else if (score < -2) setLastEmotion('negative');
+        else setLastEmotion('neutral');
         setConversation((prev) => [...prev, { from: 'user', text }]);
         updateInteractions(1);
         transcriptRef.current = '';
@@ -300,6 +307,7 @@ export default function VoiceScreen() {
             ? 'Premium voice conversations are unlimited'
             : 'Free preview limited to 15 seconds. Upgrade for unlimited voice chats.'}
         </Text>
+        <Text style={styles.emotionText}>Mood: {lastEmotion}</Text>
       </View>
 
       <PremiumFeatureModal
@@ -481,4 +489,10 @@ const styles = StyleSheet.create({
     color: '#999999',
     textAlign: 'center',
     paddingHorizontal: 40,
-  },});
+  },
+  emotionText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 4,
+  },
+});
