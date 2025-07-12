@@ -7,6 +7,7 @@ export interface Gift {
   premium: boolean;
   category: 'common' | 'rare' | 'exclusive';
   effect: string;
+  event?: string;
 }
 
 

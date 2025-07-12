@@ -6,7 +6,8 @@ module.exports = [
     imageUrl: 'https://images.pexels.com/photos/67636/rose-blue-flower-rose-blooms-67636.jpeg?auto=compress&cs=tinysrgb&w=600',
     premium: false,
     category: 'common',
-    effect: 'Small boost to relationship score'
+    effect: 'Small boost to relationship score',
+    event: 'valentines'
   },
   {
     name: 'Teddy Bear',
@@ -24,7 +25,8 @@ module.exports = [
     imageUrl: 'https://images.pexels.com/photos/65882/chocolate-dark-coffee-confiserie-65882.jpeg?auto=compress&cs=tinysrgb&w=600',
     premium: false,
     category: 'common',
-    effect: 'Medium boost to relationship score'
+    effect: 'Medium boost to relationship score',
+    event: 'valentines'
   },
   {
     name: 'Virtual Jewelry',
@@ -60,7 +62,8 @@ module.exports = [
     imageUrl: 'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg?auto=compress&cs=tinysrgb&w=600',
     premium: true,
     category: 'exclusive',
-    effect: 'Very large boost to relationship score'
+    effect: 'Very large boost to relationship score',
+    event: 'anniversary'
   },
   {
     name: 'Love Letter',
@@ -87,6 +90,7 @@ module.exports = [
     imageUrl: 'https://images.pexels.com/photos/1268855/pexels-photo-1268855.jpeg?auto=compress&cs=tinysrgb&w=600',
     premium: true,
     category: 'exclusive',
-    effect: 'Extreme boost to relationship score and unlocks special vacation memories'
+    effect: 'Extreme boost to relationship score and unlocks special vacation memories',
+    event: 'summer'
   }
 ];

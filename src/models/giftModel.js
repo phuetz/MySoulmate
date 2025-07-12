@@ -33,6 +33,10 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: 'common'
     },
+    event: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     effect: {
       type: DataTypes.STRING,
       allowNull: true
@@ -46,6 +50,10 @@ module.exports = (sequelize) => {
       {
         name: 'gifts_price_idx',
         fields: ['price']
+      },
+      {
+        name: 'gifts_event_idx',
+        fields: ['event']
       }
     ]
   });

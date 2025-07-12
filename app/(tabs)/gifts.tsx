@@ -148,6 +148,11 @@ export default function GiftsScreen() {
             <Star size={12} color="#FFFFFF" />
           </View>
         )}
+        {item.event && (
+          <View style={styles.eventBadge}>
+            <Text style={styles.eventText}>{item.event}</Text>
+          </View>
+        )}
         <View style={[styles.categoryBadge, { backgroundColor: getCategoryColor(item.category) }]}>
           <Text style={styles.categoryText}>{item.category}</Text>
         </View>
@@ -493,6 +498,21 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  eventBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#FF6B8A',
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  eventText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '500',
+    textTransform: 'capitalize',
   },
   categoryBadge: {
     position: 'absolute',
