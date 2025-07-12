@@ -9,13 +9,19 @@ interface GiftEffect {
   expiresAt: number;
 }
 
-interface CompanionData {
+export interface PersonalityTrait {
+  id: number;
+  name: string;
+  intensity: number;
+}
+
+export interface CompanionData {
   id: string;
   name: string;
   avatarUrl: string;
   avatarName?: string;
   videoUrl?: string;
-  personalityTraits: any[];
+  personalityTraits: PersonalityTrait[];
   interactions: number;
   messages: number;
   gifts: number;
@@ -66,9 +72,9 @@ const defaultCompanion: CompanionData = {
   avatarUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600',
   videoUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600',
   personalityTraits: [
-    { id: 1, name: 'Caring' },
-    { id: 3, name: 'Intelligent' },
-    { id: 5, name: 'Witty' }
+    { id: 1, name: 'Caring', intensity: 3 },
+    { id: 3, name: 'Intelligent', intensity: 3 },
+    { id: 5, name: 'Witty', intensity: 3 }
   ],
   interactions: 12,
   messages: 37,

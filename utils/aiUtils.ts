@@ -167,7 +167,7 @@ export const generateAIResponse = async (
   if (openai) {
     try {
       const personality = companion.personalityTraits
-        .map((t: any) => t.name)
+        .map((t: any) => `${t.name} (${t.intensity ?? 3}/5)`) 
         .join(', ');
       const affection = companion.affection || 0;
       const activeEffects = (companion.activeGiftEffects || [])
