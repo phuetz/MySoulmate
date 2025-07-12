@@ -95,5 +95,15 @@ export const authService = {
       await AsyncStorage.setItem('refreshToken', response.data.refreshToken);
     }
     return response.data;
+  },
+
+  async loginWithGoogle(idToken: string): Promise<AuthResponse> {
+    const response = await api.post('/auth/google', { idToken });
+    await AsyncStorage.setItem('userToken', response.data.token);
+    if (response.data.refreshToken) {
+      await AsyncStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+    await AsyncStorage.setItem('userData', JSON.stringify(response.data.user));
+    return response.data;
   }
 };

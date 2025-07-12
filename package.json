@@ -33,6 +33,8 @@
     "expo-av": "^15.1.7",
     "expo-image-picker": "^16.1.4",
     "expo-local-authentication": "^14.0.0",
+    "expo-auth-session": "^4.0.0",
+    "expo-web-browser": "^12.0.0",
     "expo-notifications": "^0.20.1",
     "expo-speech": "^13.1.7",
     "express": "^4.18.2",
