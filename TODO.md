@@ -7,7 +7,7 @@
 - [x] Connect authentication to backend API
 - [x] Add password reset functionality
 - [x] Implement email verification
-- [ ] Add social media login options
+- [x] Add social media login options
 - [x] Implement token refresh mechanism
 - [x] Add biometric authentication for mobile
 

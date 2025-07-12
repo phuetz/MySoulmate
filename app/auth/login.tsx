@@ -9,14 +9,23 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+
+WebBrowser.maybeCompleteAuthSession();
 import { useAuth } from '@/context/AuthContext';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { authService } from '@/services/authService';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isLoading, refreshToken } = useAuth();
+  const { login, isLoading, refreshToken, loginWithGoogle } = useAuth();
   const { isHardwareAvailable, isEnrolled, authenticate } = useBiometricAuth();
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: process.env.GOOGLE_EXPO_CLIENT_ID,
+    iosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID
+  });
 
   const [hasSavedSession, setHasSavedSession] = useState(false);
 
@@ -29,6 +38,17 @@ export default function LoginScreen() {
   useEffect(() => {
     authService.getRefreshToken().then((token) => setHasSavedSession(!!token));
   }, []);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const idToken = response.authentication?.idToken;
+      if (idToken) {
+        loginWithGoogle(idToken)
+          .then(() => router.replace('/(tabs)'))
+          .catch(() => Alert.alert('Login Error', 'Google login failed'));
+      }
+    }
+  }, [response]);
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -130,6 +150,14 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.googleButton}
+          onPress={() => promptAsync()}
+          disabled={!request}
+        >
+          <Text style={styles.googleButtonText}>Login with Google</Text>
+        </TouchableOpacity>
+
         {hasSavedSession && (
           <TouchableOpacity
             style={styles.biometricButton}
@@ -221,6 +249,18 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   biometricButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  googleButton: {
+    backgroundColor: '#4285F4',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  googleButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',

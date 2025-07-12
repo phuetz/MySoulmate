@@ -16,6 +16,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -75,6 +76,20 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (idToken: string) => {
+    setIsLoading(true);
+    try {
+      const response: AuthResponse = await authService.loginWithGoogle(idToken);
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Social login error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     setIsLoading(true);
     
@@ -113,7 +128,8 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         login, 
         register,
         logout,
-        refreshToken
+        refreshToken,
+        loginWithGoogle
       }}
     >
       {children}
