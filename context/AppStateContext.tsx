@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { FlatList } from 'react-native';
+import { companionService } from '@/services/companionService';
 
 // Define types
 interface GiftEffect {
@@ -111,6 +112,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [virtualCurrency, setVirtualCurrency] = useState<number>(300);
   const [unreadNotifications, setUnreadNotifications] = useState<number>(3);
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCompanion = async () => {
+      try {
+        const data = await companionService.getCompanion();
+        setCompanion(data);
+      } catch (err) {
+        console.log('Failed to load companion data', err);
+      }
+    };
+    fetchCompanion();
+  }, []);
 
   const updateCompanion = (data: CompanionData) => {
     setCompanion(data);
