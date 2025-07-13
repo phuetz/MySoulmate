@@ -124,7 +124,7 @@
 ### Payment Processing
 
 - [ ] Integrate payment gateway(s) for subscriptions and purchases
-- [ ] Implement webhook handling for payment events
+- [x] Implement webhook handling for payment events
 - [ ] Add receipt generation and tax calculation
 - [ ] Implement secure storage for payment information
 
