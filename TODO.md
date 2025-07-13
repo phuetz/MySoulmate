@@ -38,8 +38,8 @@
 ### Video Feature
 
 - [ ] Implement actual video simulation (animation of companion)
-- [ ] Add video recording features
-- [ ] Support video filters and effects
+- [x] Add video recording features
+- [x] Support video filters and effects
 - [x] Implement video call duration tracking and analytics
 
 ### AR Experience
@@ -48,7 +48,7 @@
 - [ ] Implement 3D model loading for companions
 - [ ] Add proper environment scanning and plane detection
 - [ ] Support 3D model animation and interaction
-- [ ] Add AR photo capturing with proper compositing
+- [x] Add AR photo capturing with proper compositing
 
 ### Gift System
 
@@ -59,14 +59,14 @@
 
 ### Notification System
 
-- [ ] Replace mock notifications with actual push notification service
+- [x] Replace mock notifications with actual push notification service
 - [x] Implement scheduled notifications
 - [x] Add personalized notification content based on user interactions
  - [x] Support rich notifications with images
 
 ### Premium Features
 
-- [ ] Implement actual subscription management
+- [x] Implement actual subscription management
 - [ ] Connect to payment providers (Stripe, etc.)
 - [x] Add trial period functionality
 - [ ] Implement upgrade prompts based on user behavior
@@ -116,7 +116,7 @@
 
 ### AI Integration
 
-- [ ] Set up connections to AI service providers
+- [x] Set up connections to AI service providers
 - [x] Implement AI response caching where appropriate
 - [x] Add monitoring for AI service costs and usage
 - [x] Implement fallback mechanisms for AI service outages
