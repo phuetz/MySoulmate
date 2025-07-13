@@ -125,8 +125,8 @@
 
 - [ ] Integrate payment gateway(s) for subscriptions and purchases
 - [x] Implement webhook handling for payment events
-- [ ] Add receipt generation and tax calculation
-- [ ] Implement secure storage for payment information
+- [x] Add receipt generation and tax calculation
+- [x] Implement secure storage for payment information
 
 ## Mock Data to Replace
 
