@@ -15,8 +15,9 @@ import {
   RotateCcw,
   Circle,
   StopCircle,
+  Filter,
 } from 'lucide-react-native';
-import { Camera, CameraType, useCameraPermissions } from 'expo-camera';
+import { Camera, CameraType, useCameraPermissions, WhiteBalance } from 'expo-camera';
 import { Video } from 'expo-av';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
@@ -34,6 +35,12 @@ export default function VideoScreen() {
   const cameraRef = useRef<Camera | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideos, setRecordedVideos] = useState<string[]>([]);
+  const videoFilters = [
+    { name: 'Normal', value: WhiteBalance.auto },
+    { name: 'Warm', value: WhiteBalance.sunny },
+    { name: 'Cool', value: WhiteBalance.fluorescent }
+  ];
+  const [filterIndex, setFilterIndex] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -157,6 +164,7 @@ export default function VideoScreen() {
               type={
                 cameraPosition === 'front' ? CameraType.front : CameraType.back
               }
+              whiteBalance={videoFilters[filterIndex].value}
               ratio="16:9"
             />
           </View>
@@ -177,6 +185,13 @@ export default function VideoScreen() {
 
             <TouchableOpacity
               style={styles.controlButton}
+              onPress={() => setFilterIndex((filterIndex + 1) % videoFilters.length)}
+            >
+              <Filter size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.controlButton}
               onPress={isRecording ? stopRecording : startRecording}
             >
               {isRecording ? (
@@ -189,6 +204,10 @@ export default function VideoScreen() {
             <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
               <PhoneOff size={28} color="#FFFFFF" />
             </TouchableOpacity>
+          </View>
+
+          <View style={styles.filterLabelContainer} pointerEvents="none">
+            <Text style={styles.filterLabel}>{videoFilters[filterIndex].name}</Text>
           </View>
         </View>
       ) : (
@@ -440,5 +459,18 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 4,
     textAlign: 'center',
+  },
+  filterLabelContainer: {
+    position: 'absolute',
+    bottom: 110,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
+  },
+  filterLabel: {
+    color: '#FFFFFF',
+    fontSize: 12,
   },
 });
