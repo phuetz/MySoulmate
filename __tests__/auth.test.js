@@ -252,4 +252,5 @@ describe('Auth Routes', () => {
       const user = await User.findOne({ where: { email: 'verify@example.com' } });
       expect(user.emailVerified).toBe(true);
     });
-  });});
+  });
+});
