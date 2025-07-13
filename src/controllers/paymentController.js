@@ -57,3 +57,21 @@ exports.handleWebhook = async (req, res) => {
     return res.status(400).json({ success: false });
   }
 };
+
+/**
+ * Generate a simple receipt with tax calculation
+ */
+exports.generateReceipt = async (req, res) => {
+  try {
+    const { items = [], taxRate = 0.2 } = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Items required' });
+    }
+    const { generateReceipt } = require('../utils/receipt');
+    const receipt = generateReceipt(items, taxRate);
+    return res.status(200).json({ receipt });
+  } catch (error) {
+    logger.error(`Receipt generation failed: ${error.message}`);
+    return res.status(400).json({ message: 'Failed to generate receipt' });
+  }
+};
