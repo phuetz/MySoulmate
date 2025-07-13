@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as ExpoNotifications from 'expo-notifications';
+import { sendWearableNotification } from './wearableService';
 import { Notification } from '@/components/NotificationItem';
 import { CompanionData } from '@/context/AppStateContext';
 
@@ -9,6 +10,8 @@ declare global {
     Notification: typeof Notification;
   }
 }
+
+export { sendWearableNotification };
 
 // This would use actual push notification services in production
 // For this demo, we're simulating the functionality

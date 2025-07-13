@@ -193,4 +193,4 @@ Replace mock gift data in `data/giftData.ts` with data from backend API.
 - [x] Generation d'avatar par IA a partir de photos utilisateur
 - [x] Recommandations personnalisees de contenus (videos, musique, articles)
 - [x] Integration avec calendriers externes pour rappels
-- [ ] Support des montres connectees pour notifications rapides
+- [x] Support des montres connectees pour notifications rapides
