@@ -60,6 +60,8 @@ interface AppStateContextType {
   setUnreadNotifications: React.Dispatch<React.SetStateAction<number>>;
   selectedVoice: string | null;
   setSelectedVoice: React.Dispatch<React.SetStateAction<string | null>>;
+  showUpgradePrompt: boolean;
+  setShowUpgradePrompt: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // Create context
@@ -118,6 +120,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [virtualCurrency, setVirtualCurrency] = useState<number>(300);
   const [unreadNotifications, setUnreadNotifications] = useState<number>(3);
   const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchCompanion = async () => {
@@ -199,6 +202,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(interval);
   }, [companion.notificationsEnabled]);
 
+  useEffect(() => {
+    if (!isPremium && companion.interactions >= 20) {
+      setShowUpgradePrompt(true);
+    }
+  }, [companion.interactions, isPremium]);
+
   return (
     <AppStateContext.Provider 
       value={{ 
@@ -215,7 +224,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         unreadNotifications,
         setUnreadNotifications,
         selectedVoice,
-        setSelectedVoice
+        setSelectedVoice,
+        showUpgradePrompt,
+        setShowUpgradePrompt
       }}
     >
       {children}
