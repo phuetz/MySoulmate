@@ -48,6 +48,7 @@ MySoulmate est une application complète de compagnon IA construite avec React N
 - Rappels d'interaction
 - Messages programmés
 - Support push notifications
+- Notifications rapides sur montres connectées
 
 #### 🎮 **Gamification et jeux**
 - Système de niveaux et XP
