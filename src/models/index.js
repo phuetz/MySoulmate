@@ -17,6 +17,7 @@ const GiftModel = require('./giftModel')(sequelize);
 const UserGiftModel = require('./userGiftModel')(sequelize);
 const SessionModel = require('./sessionModel')(sequelize);
 const SubscriptionModel = require('./subscriptionModel')(sequelize);
+const PushTokenModel = require('./pushTokenModel')(sequelize);
 const giftSeedData = require('../seed/gifts');
 
 // Définition des associations
@@ -73,6 +74,15 @@ SubscriptionModel.belongsTo(UserModel, {
   as: 'user'
 });
 
+UserModel.hasMany(PushTokenModel, {
+  foreignKey: 'userId',
+  as: 'pushTokens'
+});
+PushTokenModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
 // Fonction pour tester la connexion à la base de données
 const testConnection = async () => {
   try {
@@ -116,5 +126,6 @@ module.exports = {
   Gift: GiftModel,
   UserGift: UserGiftModel,
   Session: SessionModel,
-  Subscription: SubscriptionModel
+  Subscription: SubscriptionModel,
+  PushToken: PushTokenModel
 };

@@ -16,6 +16,7 @@ const recommendationRoutes = require('../recommendationRoutes');
 const calendarRoutes = require('../calendarRoutes');
 const companionRoutes = require('../companionRoutes');
 const paymentRoutes = require('../paymentRoutes');
+const pushRoutes = require('../pushRoutes');
 
 // Définir les routes pour l'API v1
 router.use('/auth', authRoutes);
@@ -29,5 +30,6 @@ router.use('/recommendations', recommendationRoutes);
 router.use('/calendar', calendarRoutes);
 router.use('/companion', companionRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/push', pushRoutes);
 
 module.exports = router;
