@@ -306,6 +306,14 @@ npm run backup
 
 Les fichiers seront stockés dans le dossier `backups/` avec un horodatage.
 
+Pour nettoyer les anciennes sessions expirées et archiver les données :
+
+```bash
+npm run cleanup
+```
+
+Les archives seront créées dans le dossier `archives/` au format JSON.
+
 ## 📞 Support
 
 Pour obtenir de l'aide ou signaler des problèmes :
