@@ -103,7 +103,7 @@
 
 - [ ] Consider migrating from SQLite to a more robust solution (PostgreSQL, MongoDB)
 - [ ] Implement proper database migrations
-- [ ] Add data archiving and cleanup procedures
+ - [x] Add data archiving and cleanup procedures
 - [ ] Implement efficient indexing for frequently accessed data
 
 ### API Endpoints

@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "docs": "node src/utils/generateDocs.js",
     "build": "expo export",
-    "backup": "node scripts/backupDatabase.js"
+    "backup": "node scripts/backupDatabase.js",
+    "cleanup": "node scripts/cleanupDatabase.js"
   },
   "keywords": [
     "express",
