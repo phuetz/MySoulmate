@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import * as ExpoNotifications from 'expo-notifications';
+import api from './api';
 import { sendWearableNotification } from './wearableService';
 import { Notification } from '@/components/NotificationItem';
 import { CompanionData } from '@/context/AppStateContext';
@@ -45,6 +46,29 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   } else {
     // For this demo, we'll simulate successful permission on native
     return true;
+  }
+}
+
+export async function registerDevicePushToken(userId?: string): Promise<string | null> {
+  try {
+    const { status } = await ExpoNotifications.getPermissionsAsync();
+    let finalStatus = status;
+    if (status !== 'granted') {
+      const request = await ExpoNotifications.requestPermissionsAsync();
+      finalStatus = request.status;
+    }
+    if (finalStatus !== 'granted') return null;
+    const tokenData = await ExpoNotifications.getExpoPushTokenAsync();
+    const token = tokenData.data;
+    await api.post('/push/register', {
+      token,
+      userId,
+      platform: Platform.OS,
+    });
+    return token;
+  } catch (err) {
+    console.log('Failed to register push token', err);
+    return null;
   }
 }
 
@@ -214,12 +238,12 @@ export async function scheduleDailyNotification(
 
 // Send a push notification
 export async function sendPushNotification(
+  token: string,
   title: string,
   body: string,
   data: any = {},
 ): Promise<boolean> {
-  // In a real app, we'd use expo-notifications or a service like Firebase Cloud Messaging
-  console.log('Sending push notification:', { title, body, data });
+  console.log('Sending push notification:', { token, title, body, data });
 
   // For web, we can use the browser's Notification API if available
   if (
@@ -244,15 +268,23 @@ export async function sendPushNotification(
     }
   }
 
-  // For native platforms, show a local notification immediately
   try {
-    await ExpoNotifications.scheduleNotificationAsync({
-      content: { title, body, data },
-      trigger: null,
+    await api.post('/push/send', {
+      token,
+      title,
+      message: body,
+      data,
     });
     return true;
   } catch (error) {
-    console.log('Error sending push notification:', error);
+    console.log('Error sending push notification via API:', error);
+    // Fallback to local notification
+    try {
+      await ExpoNotifications.scheduleNotificationAsync({
+        content: { title, body, data },
+        trigger: null,
+      });
+    } catch (_) {}
     return false;
   }
 }
