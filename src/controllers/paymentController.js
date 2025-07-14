@@ -75,3 +75,35 @@ exports.generateReceipt = async (req, res) => {
     return res.status(400).json({ message: 'Failed to generate receipt' });
   }
 };
+
+/**
+ * Create a Stripe Checkout session
+ */
+exports.createCheckoutSession = async (req, res) => {
+  try {
+    const { priceId, successUrl, cancelUrl } = req.body;
+    if (!priceId) {
+      return res.status(400).json({ message: 'priceId required' });
+    }
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      logger.warn('Stripe secret key not configured');
+      return res.status(400).json({ message: 'Stripe not configured' });
+    }
+
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [
+        { price: priceId, quantity: 1 }
+      ],
+      success_url: successUrl || 'https://example.com/success',
+      cancel_url: cancelUrl || 'https://example.com/cancel'
+    });
+
+    return res.status(200).json({ url: session.url, id: session.id });
+  } catch (error) {
+    logger.error(`Checkout session creation failed: ${error.message}`);
+    return res.status(400).json({ message: 'Failed to create checkout session' });
+  }
+};

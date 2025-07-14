@@ -8,4 +8,7 @@ router.post('/webhook', express.json({ type: '*/*' }), paymentController.handleW
 // Generate receipt
 router.post('/receipt', paymentController.generateReceipt);
 
+// Create Stripe checkout session
+router.post('/checkout', paymentController.createCheckoutSession);
+
 module.exports = router;

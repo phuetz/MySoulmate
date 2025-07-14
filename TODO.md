@@ -67,7 +67,7 @@
 ### Premium Features
 
 - [x] Implement actual subscription management
-- [ ] Connect to payment providers (Stripe, etc.)
+- [x] Connect to payment providers (Stripe, etc.)
 - [x] Add trial period functionality
 - [x] Implement upgrade prompts based on user behavior
 
