@@ -1,0 +1,45 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linter
+echo "📝 Linting code..."
+npm run lint || {
+  echo "❌ Linting failed. Please fix errors before committing."
+  exit 1
+}
+
+# Run prettier
+echo "🎨 Checking code formatting..."
+npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,md}" || {
+  echo "❌ Code formatting check failed. Run 'npm run format' to fix."
+  exit 1
+}
+
+# Run tests
+echo "🧪 Running tests..."
+npm test -- --bail --findRelatedTests || {
+  echo "❌ Tests failed. Please fix before committing."
+  exit 1
+}
+
+# Check for sensitive data
+echo "🔒 Checking for sensitive data..."
+if git diff --cached | grep -qE '(password|secret|api[_-]?key|token|credentials).*=.*["\x27][^"\x27]{8,}'; then
+  echo "⚠️  WARNING: Potential sensitive data detected in commit!"
+  echo "Please review your changes and remove any secrets."
+  echo "Use environment variables instead."
+  exit 1
+fi
+
+# Check for console.log
+echo "🚫 Checking for console.log..."
+if git diff --cached --name-only | grep -E '\.(js|jsx|ts|tsx)$' | xargs grep -n 'console\.log' 2>/dev/null; then
+  echo "⚠️  WARNING: console.log statements found!"
+  echo "Please remove or replace with proper logging before committing."
+  echo "Use logger.info(), logger.debug(), etc. instead."
+  # Don't fail, just warn
+fi
+
+echo "✅ Pre-commit checks passed!"

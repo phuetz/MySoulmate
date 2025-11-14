@@ -24,6 +24,15 @@ coverage/
 dist/
 build/
 
+# Base de données
+database.sqlite
+database.sqlite-journal
+database.sqlite-shm
+database.sqlite-wal
+*.db
+*.sqlite
+*.sqlite3
+
 # Divers
 .DS_Store
 .idea/
@@ -32,3 +41,15 @@ build/
 *.swo
 uploads/
 backups/
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.cache/
+
+# Fichiers de sécurité sensibles
+*.pem
+*.key
+*.cert
+*.p12
+secrets/

@@ -1,0 +1,15 @@
+/**
+ * Sequelize CLI Configuration
+ */
+
+const config = require('./src/config/database');
+
+module.exports = {
+  development: config,
+  test: {
+    ...config,
+    dialect: 'sqlite',
+    storage: ':memory:'
+  },
+  production: config
+};

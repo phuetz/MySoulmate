@@ -10,10 +10,18 @@ const swaggerSetup = require('./utils/swagger');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 const logger = require('./utils/logger');
 const ipFilter = require('./middleware/ipFilterMiddleware');
+const {
+  httpsEnforcement,
+  bodySizeLimiter,
+  additionalSecurityHeaders,
+  sanitizeRequest
+} = require('./middleware/securityMiddleware');
+const { RATE_LIMITS } = require('./config/constants');
 
 // Routes versionnées
 const v1Routes = require('./routes/v1');
 const versionedRoutes = require('./routes/versionedRoutes');
+const healthRoutes = require('./routes/health');
 
 // Initialisation de l'application Express
 const app = express();
@@ -29,13 +37,46 @@ app.get('/metrics', async (req, res) => {
   res.end(await client.register.metrics());
 });
 
-// Middleware de base
-app.use(cors());
-app.use(helmet());
-app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security middleware (must be first)
+app.use(httpsEnforcement);
+app.use(additionalSecurityHeaders);
 app.use(ipFilter);
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN?.split(',') || '*',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Helmet security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:']
+    }
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+// Compression
+app.use(compression());
+
+// Body parsing with size limits
+app.use(bodySizeLimiter('10mb'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request sanitization
+app.use(sanitizeRequest);
 
 // Logging des requêtes HTTP
 app.use(morgan('dev', {
@@ -44,27 +85,52 @@ app.use(morgan('dev', {
   }
 }));
 
-// Rate limiting
+// Rate limiting - General
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limite chaque IP à 100 requêtes par windowMs
+  windowMs: RATE_LIMITS.GENERAL.WINDOW_MS,
+  max: RATE_LIMITS.GENERAL.MAX_REQUESTS,
   standardHeaders: true,
   legacyHeaders: false,
-  message: 'Trop de requêtes, veuillez réessayer plus tard'
+  message: 'Trop de requêtes, veuillez réessayer plus tard',
+  handler: (req, res) => {
+    logger.warn('Rate limit exceeded', {
+      ip: req.ip,
+      path: req.path
+    });
+    res.status(429).json({
+      error: 'Trop de requêtes, veuillez réessayer plus tard'
+    });
+  }
 });
 app.use(limiter);
+
+// Stricter rate limiting for auth routes
+const authLimiter = rateLimit({
+  windowMs: RATE_LIMITS.AUTH.WINDOW_MS,
+  max: RATE_LIMITS.AUTH.MAX_REQUESTS,
+  skipSuccessfulRequests: true,
+  message: 'Trop de tentatives de connexion, réessayez plus tard'
+});
+app.use('/api/v1/auth', authLimiter);
 
 // Documentation Swagger
 const { swaggerUi, specs } = swaggerSetup;
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
 
+// Health check routes (no auth required)
+app.use('/', healthRoutes);
+
 // Route de base
 app.get('/', (req, res) => {
   res.status(200).json({
-    message: 'Bienvenue sur l\'API RESTful',
+    message: 'Bienvenue sur l\'API MySoulmate',
     documentation: '/api-docs',
+    health: '/health',
+    status: '/status',
+    metrics: '/metrics',
     apiVersion: 'v1',
-    apiBaseUrl: '/api/v1'
+    apiBaseUrl: '/api/v1',
+    environment: process.env.NODE_ENV
   });
 });
 

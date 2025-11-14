@@ -10,6 +10,22 @@ const crypto = require('crypto');
 const { Op } = Sequelize;
 
 /**
+ * Generate JWT token for user
+ * @param {Object} user - User object
+ * @returns {string} JWT token
+ */
+function generateToken(user) {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is not set');
+  }
+  return jwt.sign(
+    { id: user.id, email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRATION || '24h' }
+  );
+}
+
+/**
  * @desc    Inscription d'un nouvel utilisateur
  * @route   POST /api/auth/register
  * @access  Public
@@ -53,6 +69,8 @@ exports.register = async (req, res, next) => {
     });
 
     sendVerificationEmail(user.email, emailVerificationToken);
+
+    const token = generateToken(user);
 
     const responseData = {
       message: 'Utilisateur enregistré avec succès',
@@ -117,11 +135,7 @@ exports.login = async (req, res, next) => {
     await user.update({ lastLogin: new Date() });
 
     // Générer un token JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'votre_secret_jwt',
-      { expiresIn: process.env.JWT_EXPIRATION || '24h' }
-    );
+    const token = generateToken(user);
     const refreshToken = crypto.randomBytes(40).toString('hex');
     await user.update({
       refreshToken,
@@ -278,11 +292,7 @@ exports.refreshToken = async (req, res, next) => {
       return res.status(401).json({ message: 'Token invalide ou expiré' });
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'votre_secret_jwt',
-      { expiresIn: process.env.JWT_EXPIRATION || '24h' }
-    );
+    const token = generateToken(user);
     const newRefreshToken = crypto.randomBytes(40).toString('hex');
     await user.update({
       refreshToken: newRefreshToken,

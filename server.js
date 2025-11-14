@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+// Validate environment variables before starting
+const { runValidation } = require('./src/config/validateEnv');
+runValidation();
+
 const app = require('./src/app');
 const { testConnection, initializeDatabase } = require('./src/models');
 const logger = require('./src/utils/logger');
