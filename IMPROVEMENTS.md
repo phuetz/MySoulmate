@@ -663,6 +663,441 @@ AI_MAX_TOKENS=500
 AI_TEMPERATURE=0.7
 ```
 
+**Phase 3 (5 améliorations)**:
+- Documentation complète de production
+- Configuration .env exhaustive
+- Guide de déploiement
+- Guide de démarrage rapide
+- Checklist de production
+
+## Phase 4: Production Essentials & Advanced Features
+
+### 1. Service d'Email avec Nodemailer
+**Fichiers**: `src/services/emailService.js`, `src/controllers/passwordResetController.js`, `src/routes/passwordResetRoutes.js`
+
+Service d'envoi d'emails professionnel avec templates et fallback:
+- Support SMTP (Gmail, SendGrid, custom)
+- Templates HTML responsive pour tous les cas d'usage
+- Mode développement (console uniquement)
+- Gestion des erreurs robuste
+
+**Templates disponibles**:
+- Email de bienvenue
+- Réinitialisation de mot de passe
+- Code 2FA
+- Export de données GDPR
+- Confirmation de suppression de compte
+- Confirmation d'abonnement
+
+**Routes de réinitialisation de mot de passe**:
+```javascript
+POST /api/v1/password-reset/request  // Demander un lien de réinitialisation
+POST /api/v1/password-reset/verify   // Vérifier un token
+POST /api/v1/password-reset/reset    // Réinitialiser le mot de passe
+GET  /api/v1/password-reset/stats    // Stats (admin)
+```
+
+**Configuration**:
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM="MySoulmate <noreply@mysoulmate.app>"
+```
+
+### 2. Authentification à Deux Facteurs (2FA)
+**Fichiers**: `src/services/twoFactorService.js`, `src/controllers/twoFactorController.js`, `src/routes/twoFactorRoutes.js`
+
+Système 2FA complet avec TOTP et Email:
+- TOTP avec Google Authenticator (QR code)
+- 2FA par email avec codes à 6 chiffres
+- Codes de récupération (10 codes de backup)
+- Expiration et limite de tentatives
+- Support des deux méthodes en parallèle
+
+**Routes disponibles**:
+```javascript
+GET  /api/v1/2fa/status                    // Statut 2FA
+POST /api/v1/2fa/totp/enable               // Activer TOTP
+POST /api/v1/2fa/totp/verify               // Vérifier TOTP
+POST /api/v1/2fa/email/enable              // Activer 2FA email
+POST /api/v1/2fa/email/verify              // Vérifier code email
+POST /api/v1/2fa/disable                   // Désactiver 2FA
+POST /api/v1/2fa/backup-codes/regenerate   // Régénérer codes de backup
+GET  /api/v1/2fa/stats                     // Stats (admin)
+```
+
+**Fonctionnalités**:
+- Génération de QR codes pour Google Authenticator
+- Codes email expiration 10 minutes
+- Maximum 5 tentatives par code
+- Codes de récupération hashés (SHA-256)
+- Middleware `require2FA()` pour routes sensibles
+
+### 3. Upload et Optimisation d'Images
+**Fichiers**: `src/services/uploadService.js`
+
+Service complet de gestion d'images avec optimisation automatique:
+- Upload avec Multer (mémoire)
+- Optimisation avec Sharp
+- Génération de variantes multiples
+- Redimensionnement intelligent
+- Support JPEG, PNG, GIF, WebP
+- Nettoyage automatique des fichiers temporaires
+
+**Variantes générées**:
+- **Profils**: original (1024x1024), medium (500x500), thumbnail (150x150)
+- **Compagnons**: original (2048x2048), large (1024x1024), medium (512x512), thumbnail (150x150)
+- **Cadeaux**: original (1024x1024), thumbnail (200x200)
+
+**Fonctions principales**:
+```javascript
+const { uploadProfilePicture, uploadCompanionImage, uploadGiftImage, deleteImageVariants } = require('./uploadService');
+
+// Upload et optimisation
+const files = await uploadProfilePicture(file, userId);
+// Retourne: { original: {...}, medium: {...}, thumbnail: {...} }
+
+// Suppression
+await deleteImageVariants([url1, url2, url3]);
+
+// Stats de stockage
+const stats = await getStorageStats();
+```
+
+**Limites**:
+- Profils: 5MB max
+- Compagnons: 10MB max
+- Cadeaux: 5MB max
+
+### 4. Documentation API avec Swagger/OpenAPI
+**Fichiers**: `src/config/swagger.js`
+
+Documentation interactive complète de l'API:
+- Spécification OpenAPI 3.0
+- Interface Swagger UI personnalisée
+- Schémas réutilisables
+- Exemples de requêtes/réponses
+- Support authentification JWT
+- Tags et catégories organisés
+
+**Accès**:
+```
+http://localhost:3000/api-docs          # Interface Swagger UI
+http://localhost:3000/api-docs.json     # Spécification JSON
+```
+
+**Schémas disponibles**:
+- User, ErrorResponse, SuccessResponse, PaginatedResponse
+- Composants de sécurité (bearerAuth, sessionToken, csrfToken)
+- Réponses standards (401, 403, 404, 400, 429)
+
+**Tags**:
+- Authentication, 2FA, Password Reset
+- Users, Companions, Gifts, Calendar
+- Payments, GDPR, Health, Admin
+
+### 5. Validation Centralisée avec Joi
+**Fichiers**: `src/utils/validation.js`
+
+Système de validation cohérent à travers toute l'API:
+- Schémas Joi pour toutes les routes
+- Messages d'erreur en français
+- Validation automatique avec middlewares
+- Nettoyage des données (stripUnknown)
+
+**Schémas disponibles**:
+```javascript
+const { validate, auth, passwordReset, twoFactor, user, companion, gift, calendar, payment, gdpr } = require('./utils/validation');
+
+// Utilisation dans les routes
+router.post('/register', validate(auth.register), registerController);
+router.post('/login', validate(auth.login), loginController);
+router.put('/profile', validate(auth.updateProfile), updateProfileController);
+```
+
+**Middlewares**:
+- `validate(schema)` - Valide req.body
+- `validateQuery(schema)` - Valide req.query
+- `validateParams(schema)` - Valide req.params
+
+**Schémas de base réutilisables**:
+- uuid, email, password, name, phone, url
+- dates, pagination, sorting
+- twoFactorCode, totpToken, backupCode
+
+### 6. Sentry Error Tracking
+**Fichiers**: `src/config/sentry.js`
+
+Suivi d'erreurs et monitoring de performance en production:
+- Capture automatique des exceptions
+- Tracing HTTP et performance profiling
+- Breadcrumbs pour contexte
+- Filtrage des données sensibles
+- Tags et contexte personnalisés
+
+**Initialisation**:
+```javascript
+const { initSentry, requestHandler, tracingHandler, errorHandler } = require('./config/sentry');
+
+// Dans app.js
+initSentry(app);
+app.use(requestHandler());
+app.use(tracingHandler());
+// ... routes ...
+app.use(errorHandler());
+```
+
+**Fonctions utilitaires**:
+```javascript
+const { captureException, captureMessage, setUser, wrapAsync } = require('./config/sentry');
+
+// Capture manuelle
+captureException(new Error('Oops!'), { context: 'payment' });
+captureMessage('User upgraded', 'info');
+
+// Wrapper async
+router.get('/test', wrapAsync(async (req, res) => {
+  // Les erreurs sont automatiquement capturées
+}));
+```
+
+**Configuration**:
+```env
+SENTRY_DSN=https://xxxxx@sentry.io/xxxxx
+SENTRY_TRACES_SAMPLE_RATE=0.1
+SENTRY_PROFILES_SAMPLE_RATE=0.1
+SENTRY_SEND_IN_DEV=false
+APP_VERSION=1.0.0
+```
+
+### 7. Tâches Planifiées avec node-cron
+**Fichiers**: `src/services/scheduledJobs.js`
+
+Système de maintenance automatisée avec 7 jobs:
+- **Cleanup sessions** - Toutes les heures
+- **Cleanup password tokens** - Toutes les 6 heures
+- **Process account deletions** - 3h du matin (GDPR)
+- **Cleanup temp files** - 2h du matin
+- **Cleanup unverified users** - 4h du matin (après 7 jours)
+- **Daily metrics report** - 9h du matin
+- **Subscription reminders** - 10h du matin
+
+**Initialisation**:
+```javascript
+const { initializeJobs, stopAllJobs, runJobManually } = require('./services/scheduledJobs');
+
+// Démarrer tous les jobs
+initializeJobs();
+
+// Exécuter manuellement (admin/testing)
+await runJobManually('cleanupSessions');
+```
+
+**Fonctions disponibles**:
+```javascript
+cleanupExpiredSessions()         // Supprime sessions expirées
+cleanupPasswordResetTokens()     // Nettoie tokens expirés
+processAccountDeletions()        // Supprime comptes après 30j
+cleanupTempFiles()               // Nettoie uploads/temp
+cleanupUnverifiedUsers()         // Supprime users non vérifiés après 7j
+sendDailyMetricsReport()         // Génère rapport quotidien
+sendSubscriptionReminders()      // Rappels d'abonnement
+```
+
+**Gestion**:
+- Wrapper de sécurité pour toutes les erreurs
+- Logging détaillé avec durée d'exécution
+- Timezone Europe/Paris
+- Contrôle manuel (start/stop/list)
+
+### 8. Gestion Améliorée des Webhooks Stripe
+**Fichiers**: `src/controllers/stripeWebhookController.js`
+
+Traitement robuste de tous les événements Stripe:
+- Vérification de signature webhook
+- Handlers dédiés pour chaque événement
+- Mise à jour automatique des abonnements
+- Emails de confirmation
+- Audit logging complet
+- Capture Sentry des erreurs
+
+**Événements gérés**:
+```javascript
+checkout.session.completed      // Paiement checkout terminé
+customer.subscription.created   // Nouvel abonnement
+customer.subscription.updated   // Abonnement modifié
+customer.subscription.deleted   // Abonnement annulé
+invoice.payment_succeeded       // Paiement facture réussi
+invoice.payment_failed          // Paiement facture échoué
+```
+
+**Route**:
+```javascript
+POST /api/v1/webhooks/stripe
+```
+
+**Configuration**:
+```env
+STRIPE_SECRET_KEY=sk_test_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+```
+
+**Fonctionnalités**:
+- Mise à jour automatique du statut d'abonnement
+- Gestion de `cancel_at_period_end`
+- Emails de confirmation et d'échec
+- Logs d'audit pour tous les événements
+- Mode test pour développement
+
+### 9. Système RBAC (Role-Based Access Control)
+**Fichiers**: `src/utils/rbac.js`
+
+Contrôle d'accès granulaire basé sur les rôles et permissions:
+- 4 rôles: user, premium, moderator, admin
+- 25+ permissions définies
+- Héritage de rôles
+- Middlewares de vérification
+- Vérification de propriété de ressource
+
+**Rôles**:
+```javascript
+user       // Utilisateur standard
+premium    // Utilisateur premium (hérite de user)
+moderator  // Modérateur (hérite de premium)
+admin      // Administrateur (hérite de moderator)
+```
+
+**Permissions**:
+- `users:read`, `users:write`, `users:delete`, `users:manage`
+- `companions:read`, `companions:write`, `companions:delete`
+- `gifts:read`, `gifts:write`, `gifts:purchase`, `gifts:manage`
+- `calendar:read`, `calendar:write`
+- `payments:read`, `payments:manage`, `subscriptions:manage`
+- `admin:metrics`, `admin:logs`, `admin:settings`, `admin:jobs`
+- `moderation:content`, `moderation:users`
+- `gdpr:export`, `gdpr:delete`, `gdpr:manage`
+
+**Middlewares**:
+```javascript
+const { requirePermission, requireAllPermissions, requireAnyPermission, requireOwnershipOr } = require('./utils/rbac');
+
+// Permission simple
+router.delete('/users/:id', requirePermission('users:delete'), deleteUser);
+
+// Permissions multiples (ET)
+router.get('/admin/metrics', requireAllPermissions('admin:metrics', 'admin:logs'), getMetrics);
+
+// Permissions multiples (OU)
+router.post('/moderate', requireAnyPermission('moderation:content', 'moderation:users'), moderate);
+
+// Propriété OU permission
+router.delete('/posts/:id', requireOwnershipOr('posts:manage', getPostOwnerId), deletePost);
+
+// Tier d'abonnement
+router.get('/premium-feature', requireSubscriptionTier('premium'), premiumFeature);
+```
+
+**Fonctions utilitaires**:
+```javascript
+hasPermission(role, permission)              // Vérifie une permission
+getRolePermissions(role)                     // Liste toutes les permissions
+listAllRoles()                               // Liste tous les rôles
+canAccess(role, resource, action)            // Vérifie accès ressource
+```
+
+### Nouveaux Fichiers (Phase 4)
+- `src/services/emailService.js`
+- `src/controllers/passwordResetController.js`
+- `src/routes/passwordResetRoutes.js`
+- `src/services/twoFactorService.js`
+- `src/controllers/twoFactorController.js`
+- `src/routes/twoFactorRoutes.js`
+- `src/services/uploadService.js`
+- `src/config/swagger.js`
+- `src/utils/validation.js`
+- `src/config/sentry.js`
+- `src/services/scheduledJobs.js`
+- `src/controllers/stripeWebhookController.js`
+- `src/utils/rbac.js`
+
+### Fichiers Modifiés (Phase 4)
+- `src/models/userModel.js` (champs 2FA et subscription)
+- `src/middleware/authMiddleware.js` (requireRole, authenticate)
+- `src/routes/v1/index.js` (nouvelles routes)
+
+### Variables d'Environnement Ajoutées (Phase 4)
+```env
+# Email (Nodemailer)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM="MySoulmate <noreply@mysoulmate.app>"
+APP_URL=http://localhost:3000
+
+# Sentry
+SENTRY_DSN=https://xxxxx@sentry.io/xxxxx
+SENTRY_TRACES_SAMPLE_RATE=0.1
+SENTRY_PROFILES_SAMPLE_RATE=0.1
+SENTRY_SEND_IN_DEV=false
+APP_VERSION=1.0.0
+
+# Stripe Webhooks
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+
+# Upload
+UPLOAD_DIR=./uploads
+```
+
+### Packages Requis (Phase 4)
+```bash
+npm install nodemailer speakeasy qrcode multer sharp swagger-jsdoc swagger-ui-express joi @sentry/node @sentry/profiling-node node-cron
+```
+
 ---
 
-Dernière mise à jour: 2025-01-14
+## Résumé
+
+**Phase 1 (18 améliorations)**:
+- Sécurité: 4 (passwords, sessions, CSRF, audit)
+- Performance: 3 (compression, pagination, indexes)
+- Infrastructure: 5 (health checks, WebSocket, feature flags, Docker, CI/CD)
+- UX: 2 (skeleton loaders, haptic feedback)
+- Monitoring: 2 (Prometheus, logging)
+- Documentation: 2 (README, IMPROVEMENTS.md)
+
+**Phase 2 (6 améliorations)**:
+- GDPR Compliance complète
+- Redis caching avec fallback
+- Content moderation avancée
+- AI streaming avec SSE
+- Deep linking iOS/Android
+- Rate limiting par utilisateur
+
+**Phase 3 (5 améliorations)**:
+- Documentation complète de production
+- Configuration .env exhaustive
+- Guide de déploiement
+- Guide de démarrage rapide
+- Checklist de production
+
+**Phase 4 (9 améliorations)**:
+- Service d'email professionnel avec templates
+- Authentification à deux facteurs (TOTP + Email)
+- Upload et optimisation d'images
+- Documentation API Swagger/OpenAPI
+- Validation centralisée avec Joi
+- Sentry error tracking et performance
+- Tâches planifiées automatisées
+- Webhooks Stripe robustes
+- Système RBAC complet
+
+**Total: 38 améliorations majeures implémentées** 🎉
+
+---
+
+Dernière mise à jour: 2025-11-14

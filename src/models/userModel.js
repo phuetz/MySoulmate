@@ -91,6 +91,66 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
       comment: 'Reason provided for account deletion'
+    },
+    twoFactorEnabled: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether two-factor authentication is enabled'
+    },
+    twoFactorSecret: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'TOTP secret for Google Authenticator'
+    },
+    twoFactorMethod: {
+      type: DataTypes.ENUM('totp', 'email'),
+      allowNull: true,
+      comment: 'Two-factor authentication method'
+    },
+    twoFactorBackupCodes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'JSON array of hashed backup codes'
+    },
+    stripeCustomerId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Stripe customer ID'
+    },
+    subscriptionId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Active Stripe subscription ID'
+    },
+    subscriptionStatus: {
+      type: DataTypes.ENUM('active', 'canceled', 'past_due', 'unpaid', 'trialing'),
+      allowNull: true,
+      comment: 'Stripe subscription status'
+    },
+    subscriptionPlan: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Stripe price ID'
+    },
+    subscriptionTier: {
+      type: DataTypes.ENUM('user', 'premium', 'ultimate'),
+      defaultValue: 'user',
+      comment: 'Subscription tier for RBAC'
+    },
+    subscriptionCurrentPeriodEnd: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'End of current billing period'
+    },
+    subscriptionCancelAtPeriodEnd: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Whether subscription will cancel at period end'
+    },
+    subscriptionCancelAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Date when subscription will be canceled'
     }
   }, {
     timestamps: true,
@@ -126,10 +186,15 @@ module.exports = (sequelize) => {
     return await bcrypt.compare(password, this.password);
   };
 
+  // Alias pour compatibilité
+  User.prototype.comparePassword = User.prototype.isPasswordValid;
+
   // Méthode pour renvoyer l'utilisateur sans le mot de passe
   User.prototype.toJSON = function() {
     const values = { ...this.get() };
     delete values.password;
+    delete values.twoFactorSecret;
+    delete values.twoFactorBackupCodes;
     return values;
   };
 

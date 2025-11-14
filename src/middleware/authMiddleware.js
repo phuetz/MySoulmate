@@ -134,3 +134,39 @@ exports.isOwnerOrAdmin = (getResourceUserId) => {
     }
   };
 };
+
+/**
+ * Alias pour protect (compatibilité avec différents styles de code)
+ */
+exports.authenticate = exports.protect;
+
+/**
+ * Middleware pour restreindre l'accès basé sur le rôle
+ * @param {...string} roles - Rôles autorisés (ex: 'admin', 'premium', 'user')
+ */
+exports.requireRole = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentification requise',
+      });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      logger.warn('Access denied - insufficient role:', {
+        userId: req.user.id,
+        userRole: req.user.role,
+        requiredRoles: roles,
+      });
+
+      return res.status(403).json({
+        success: false,
+        message: 'Permissions insuffisantes',
+        requiredRoles: roles,
+      });
+    }
+
+    next();
+  };
+};
