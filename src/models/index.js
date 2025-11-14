@@ -19,6 +19,9 @@ const SessionModel = require('./sessionModel')(sequelize);
 const SubscriptionModel = require('./subscriptionModel')(sequelize);
 const PushTokenModel = require('./pushTokenModel')(sequelize);
 const AuditLogModel = require('./auditLogModel')(sequelize);
+const MemoryModel = require('./memoryModel')(sequelize);
+const CompanionStateModel = require('./companionStateModel')(sequelize);
+const ConversationModel = require('./conversationModel')(sequelize);
 const giftSeedData = require('../seed/gifts');
 
 // Définition des associations
@@ -93,6 +96,34 @@ AuditLogModel.belongsTo(UserModel, {
   as: 'user'
 });
 
+// Phase 5: Advanced Companion Features
+UserModel.hasMany(MemoryModel, {
+  foreignKey: 'userId',
+  as: 'memories'
+});
+MemoryModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+UserModel.hasOne(CompanionStateModel, {
+  foreignKey: 'userId',
+  as: 'companionState'
+});
+CompanionStateModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+UserModel.hasMany(ConversationModel, {
+  foreignKey: 'userId',
+  as: 'conversations'
+});
+ConversationModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
 // Fonction pour tester la connexion à la base de données
 const testConnection = async () => {
   try {
@@ -144,5 +175,8 @@ module.exports = {
   Session: SessionModel,
   Subscription: SubscriptionModel,
   PushToken: PushTokenModel,
-  AuditLog: AuditLogModel
+  AuditLog: AuditLogModel,
+  Memory: MemoryModel,
+  CompanionState: CompanionStateModel,
+  Conversation: ConversationModel
 };
