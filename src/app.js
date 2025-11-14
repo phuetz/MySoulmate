@@ -14,6 +14,7 @@ const ipFilter = require('./middleware/ipFilterMiddleware');
 // Routes versionnées
 const v1Routes = require('./routes/v1');
 const versionedRoutes = require('./routes/versionedRoutes');
+const healthRoutes = require('./routes/healthRoutes');
 
 // Initialisation de l'application Express
 const app = express();
@@ -67,6 +68,9 @@ app.get('/', (req, res) => {
     apiBaseUrl: '/api/v1'
   });
 });
+
+// Health check routes (avant les autres routes pour éviter le rate limiting)
+app.use('/health', healthRoutes);
 
 // Routes versionnées dynamiques
 app.use('/api', versionedRoutes);

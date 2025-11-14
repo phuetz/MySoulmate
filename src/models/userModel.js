@@ -3,6 +3,7 @@
  */
 const { DataTypes } = require('sequelize');
 const bcrypt = require('bcryptjs');
+const { validatePasswordStrength, isPasswordCompromised } = require('../utils/passwordValidator');
 
 module.exports = (sequelize) => {
   const User = sequelize.define('User', {
@@ -33,7 +34,16 @@ module.exports = (sequelize) => {
       allowNull: false,
       validate: {
         notEmpty: true,
-        len: [6, 100]
+        len: [8, 128],
+        isStrongPassword(value) {
+          const validation = validatePasswordStrength(value);
+          if (!validation.isValid) {
+            throw new Error(validation.errors.join(', '));
+          }
+          if (isPasswordCompromised(value)) {
+            throw new Error('Ce mot de passe est trop commun et a été compromis');
+          }
+        }
       }
     },
     role: {

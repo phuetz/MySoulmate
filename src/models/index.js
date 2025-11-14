@@ -18,6 +18,7 @@ const UserGiftModel = require('./userGiftModel')(sequelize);
 const SessionModel = require('./sessionModel')(sequelize);
 const SubscriptionModel = require('./subscriptionModel')(sequelize);
 const PushTokenModel = require('./pushTokenModel')(sequelize);
+const AuditLogModel = require('./auditLogModel')(sequelize);
 const giftSeedData = require('../seed/gifts');
 
 // Définition des associations
@@ -83,6 +84,15 @@ PushTokenModel.belongsTo(UserModel, {
   as: 'user'
 });
 
+UserModel.hasMany(AuditLogModel, {
+  foreignKey: 'userId',
+  as: 'auditLogs'
+});
+AuditLogModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
 // Fonction pour tester la connexion à la base de données
 const testConnection = async () => {
   try {
@@ -108,6 +118,12 @@ const initializeDatabase = async () => {
       await GiftModel.bulkCreate(giftSeedData);
       logger.info('Gift data seeded');
     }
+
+    // Initialize audit logger
+    const auditLogger = require('../utils/auditLogger');
+    auditLogger.initialize({ AuditLog: AuditLogModel });
+    logger.info('Audit logger initialized');
+
     return true;
   } catch (error) {
     logger.error(`Erreur lors de l'initialisation de la base de données: ${error.message}`);
@@ -127,5 +143,6 @@ module.exports = {
   UserGift: UserGiftModel,
   Session: SessionModel,
   Subscription: SubscriptionModel,
-  PushToken: PushTokenModel
+  PushToken: PushTokenModel,
+  AuditLog: AuditLogModel
 };

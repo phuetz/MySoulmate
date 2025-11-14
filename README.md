@@ -260,20 +260,47 @@ mysoulmate-app/
 - Journal intime avec réponses du compagnon
 - Mini-jeux interactifs (Quiz, Memory Match)
 - Calendrier de rendez-vous
+- **🔒 Sécurité renforcée**:
+  - Validation de mot de passe forte (8+ caractères, majuscules, minuscules, chiffres, caractères spéciaux)
+  - Timeout de session avec auto-déconnexion (30 min d'inactivité par défaut)
+  - Protection CSRF avec tokens
+  - Audit logging pour opérations sensibles
+  - Index de base de données pour performance optimale
+- **⚡ Performance**:
+  - Compression gzip des requêtes
+  - Utilitaires de pagination
+  - Skeleton loaders pour meilleure UX
+  - Health check endpoints (/health, /health/detailed, /health/ready, /health/live)
+- **🔧 DevOps**:
+  - Docker et Docker Compose configurés
+  - Pipeline CI/CD avec GitHub Actions
+  - Configuration de tests automatisés
+  - Métriques Prometheus disponibles
+- **🎮 Features avancées**:
+  - WebSocket pour chat en temps réel
+  - Système de feature flags dynamique
+  - Retour haptique pour interactions mobiles
+  - Composants de chargement squelette
 
 ### 🔄 En cours
 - Intégration AI réelle avec suivi des coûts
 - Statistiques d'usage consultables via `aiUsage`
 - Mécanisme de secours en cas d'indisponibilité du service AI
-- Système de paiement
+- Système de paiement (Stripe configuré)
 - Notifications push
 - Tests end-to-end
+- Export GDPR des données utilisateur
+- Modération de contenu
+- Streaming de réponses AI
 
 ### 📋 À venir
 - Déploiement production
-- Optimisations de performance
+- Migration PostgreSQL (préparée)
+- Redis pour cache distribué
 - Fonctionnalités AR avancées
-- Intégration de services tiers
+- Deep linking configuration
+- Support offline
+- Widgets mobiles
 
 ## 🤝 Contribution
 

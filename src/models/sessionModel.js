@@ -31,11 +31,18 @@ module.exports = (sequelize) => {
     expiresAt: {
       type: DataTypes.DATE,
       allowNull: false
+    },
+    lastActivityAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: DataTypes.NOW
     }
   }, {
+    timestamps: true,
     indexes: [
       { name: 'sessions_userId_idx', fields: ['userId'] },
-      { name: 'sessions_expiresAt_idx', fields: ['expiresAt'] }
+      { name: 'sessions_expiresAt_idx', fields: ['expiresAt'] },
+      { name: 'sessions_lastActivityAt_idx', fields: ['lastActivityAt'] }
     ]
   });
 

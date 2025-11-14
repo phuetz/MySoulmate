@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mysoulmate-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_change_in_production}
+      - JWT_EXPIRATION=24h
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - SESSION_TIMEOUT=1800000
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mysoulmate-network
+
+  # Redis for caching (optional but recommended)
+  redis:
+    image: redis:7-alpine
+    container_name: mysoulmate-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - mysoulmate-network
+
+  # PostgreSQL (for production use instead of SQLite)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: mysoulmate-postgres
+  #   environment:
+  #     POSTGRES_DB: mysoulmate
+  #     POSTGRES_USER: ${POSTGRES_USER:-mysoulmate}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U mysoulmate"]
+  #     interval: 30s
+  #     timeout: 3s
+  #     retries: 3
+  #   networks:
+  #     - mysoulmate-network
+
+  # Nginx reverse proxy (optional)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: mysoulmate-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - api
+  #   restart: unless-stopped
+  #   networks:
+  #     - mysoulmate-network
+
+networks:
+  mysoulmate-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  # postgres-data:
