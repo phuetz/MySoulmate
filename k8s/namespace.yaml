@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mysoulmate
+  labels:
+    name: mysoulmate
+    environment: production

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysoulmate-config
+  namespace: mysoulmate
+data:
+  # Application Config
+  NODE_ENV: "production"
+  PORT: "3000"
+
+  # Database Config
+  DB_DIALECT: "postgres"
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "mysoulmate"
+
+  # Redis Config
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+
+  # API Config
+  API_BASE_URL: "https://api.mysoulmate.app"
+
+  # Rate Limiting
+  RATE_LIMIT_WINDOW_MS: "900000"
+  RATE_LIMIT_MAX_REQUESTS: "100"
+
+  # i18n Config
+  DEFAULT_LOCALE: "en"
+  SUPPORTED_LOCALES: "en,fr,es,de,it,pt,ja,zh"
+
+  # Logging
+  LOG_LEVEL: "info"
+
+  # Features
+  FEATURE_2FA_ENABLED: "true"
+  FEATURE_ANALYTICS_ENABLED: "true"
+  FEATURE_WEBSOCKET_ENABLED: "true"

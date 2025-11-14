@@ -1,0 +1,134 @@
+{
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "submit": "Entrar",
+      "success": "Inicio de sesión exitoso",
+      "error": "Correo o contraseña inválidos",
+      "twoFactorRequired": "Se requiere autenticación de dos factores"
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "name": "Nombre completo",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Registrarse",
+      "success": "Cuenta creada exitosamente",
+      "error": "Registro fallido",
+      "emailExists": "Correo ya registrado"
+    },
+    "twoFactor": {
+      "title": "Autenticación de dos factores",
+      "code": "Código de autenticación",
+      "submit": "Verificar",
+      "error": "Código de autenticación inválido",
+      "setupTitle": "Configurar autenticación de dos factores",
+      "scanQR": "Escanea este código QR con tu app de autenticación",
+      "enterCode": "Ingresa el código de 6 dígitos de tu app",
+      "backupCodes": "Códigos de respaldo",
+      "saveBackupCodes": "Guarda estos códigos en un lugar seguro"
+    },
+    "logout": "Cerrar sesión",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "resetPassword": "Restablecer contraseña"
+  },
+  "companion": {
+    "title": "Mi Compañero",
+    "chat": {
+      "title": "Chat",
+      "placeholder": "Escribe un mensaje...",
+      "send": "Enviar",
+      "typing": "{{name}} está escribiendo...",
+      "noMessages": "Aún no hay mensajes. ¡Inicia una conversación!"
+    },
+    "voice": {
+      "title": "Llamada de voz",
+      "start": "Iniciar llamada",
+      "end": "Finalizar llamada",
+      "mute": "Silenciar",
+      "unmute": "Activar sonido",
+      "calling": "Llamando...",
+      "connected": "Conectado"
+    },
+    "video": {
+      "title": "Videollamada",
+      "start": "Iniciar video",
+      "end": "Finalizar video",
+      "camera": "Cámara",
+      "microphone": "Micrófono"
+    },
+    "personality": {
+      "title": "Personalidad",
+      "traits": "Rasgos",
+      "customize": "Personalizar",
+      "save": "Guardar cambios"
+    }
+  },
+  "subscription": {
+    "title": "Suscripción",
+    "plans": {
+      "free": {
+        "name": "Gratis",
+        "description": "Funciones básicas para empezar",
+        "price": "Gratis"
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "Desbloquea todas las funciones",
+        "price": "$9.99/mes"
+      },
+      "elite": {
+        "name": "Elite",
+        "description": "Premium + contenido exclusivo",
+        "price": "$19.99/mes"
+      }
+    },
+    "features": "Características",
+    "subscribe": "Suscribirse",
+    "manage": "Administrar suscripción",
+    "cancel": "Cancelar suscripción",
+    "current": "Plan actual",
+    "upgrade": "Mejorar",
+    "downgrade": "Reducir"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": {
+      "title": "Idioma",
+      "select": "Seleccionar idioma"
+    },
+    "theme": {
+      "title": "Tema",
+      "light": "Claro",
+      "dark": "Oscuro",
+      "auto": "Automático"
+    }
+  },
+  "errors": {
+    "network": "Error de red. Por favor verifica tu conexión.",
+    "server": "Error del servidor. Inténtalo más tarde.",
+    "unauthorized": "Debes iniciar sesión para acceder.",
+    "forbidden": "No tienes permiso para acceder.",
+    "notFound": "Recurso no encontrado.",
+    "validation": "Por favor verifica tu entrada.",
+    "unknown": "Ocurrió un error inesperado."
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "confirm": "Confirmar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "loading": "Cargando...",
+    "success": "Éxito",
+    "error": "Error",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK"
+  }
+}

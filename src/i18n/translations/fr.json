@@ -1,0 +1,209 @@
+{
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "success": "Connexion réussie",
+      "error": "Email ou mot de passe invalide",
+      "twoFactorRequired": "Authentification à deux facteurs requise"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "name": "Nom complet",
+      "email": "Email",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "submit": "S'inscrire",
+      "success": "Compte créé avec succès",
+      "error": "Échec de l'inscription",
+      "emailExists": "Email déjà enregistré"
+    },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "code": "Code d'authentification",
+      "submit": "Vérifier",
+      "error": "Code d'authentification invalide",
+      "setupTitle": "Configurer l'authentification à deux facteurs",
+      "scanQR": "Scannez ce code QR avec votre application d'authentification",
+      "enterCode": "Entrez le code à 6 chiffres de votre application",
+      "backupCodes": "Codes de secours",
+      "saveBackupCodes": "Conservez ces codes en lieu sûr"
+    },
+    "logout": "Déconnexion",
+    "forgotPassword": "Mot de passe oublié ?",
+    "resetPassword": "Réinitialiser le mot de passe"
+  },
+  "companion": {
+    "title": "Mon Compagnon",
+    "chat": {
+      "title": "Discussion",
+      "placeholder": "Tapez un message...",
+      "send": "Envoyer",
+      "typing": "{{name}} est en train d'écrire...",
+      "noMessages": "Aucun message pour le moment. Commencez une conversation !"
+    },
+    "voice": {
+      "title": "Appel vocal",
+      "start": "Démarrer l'appel",
+      "end": "Terminer l'appel",
+      "mute": "Couper le micro",
+      "unmute": "Activer le micro",
+      "calling": "Appel en cours...",
+      "connected": "Connecté"
+    },
+    "video": {
+      "title": "Appel vidéo",
+      "start": "Démarrer la vidéo",
+      "end": "Terminer la vidéo",
+      "camera": "Caméra",
+      "microphone": "Microphone"
+    },
+    "personality": {
+      "title": "Personnalité",
+      "traits": "Traits",
+      "customize": "Personnaliser",
+      "save": "Enregistrer les modifications"
+    }
+  },
+  "subscription": {
+    "title": "Abonnement",
+    "plans": {
+      "free": {
+        "name": "Gratuit",
+        "description": "Fonctionnalités de base pour commencer",
+        "price": "Gratuit"
+      },
+      "premium": {
+        "name": "Premium",
+        "description": "Débloquez toutes les fonctionnalités",
+        "price": "9,99 €/mois"
+      },
+      "elite": {
+        "name": "Elite",
+        "description": "Premium + contenu exclusif",
+        "price": "19,99 €/mois"
+      }
+    },
+    "features": "Fonctionnalités",
+    "subscribe": "S'abonner",
+    "manage": "Gérer l'abonnement",
+    "cancel": "Annuler l'abonnement",
+    "current": "Forfait actuel",
+    "upgrade": "Améliorer",
+    "downgrade": "Rétrograder"
+  },
+  "gifts": {
+    "title": "Cadeaux",
+    "send": "Envoyer un cadeau",
+    "received": "Reçus",
+    "sent": "Envoyés",
+    "categories": {
+      "flowers": "Fleurs",
+      "jewelry": "Bijoux",
+      "chocolates": "Chocolats",
+      "virtual": "Articles virtuels"
+    },
+    "purchase": "Acheter",
+    "confirmPurchase": "Confirmer l'achat"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "account": {
+      "title": "Compte",
+      "email": "Email",
+      "password": "Mot de passe",
+      "changePassword": "Changer le mot de passe",
+      "deleteAccount": "Supprimer le compte"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "push": "Notifications push",
+      "email": "Notifications par email",
+      "messages": "Notifications de messages",
+      "updates": "Mises à jour de l'application"
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "dataUsage": "Utilisation des données",
+      "exportData": "Exporter mes données",
+      "deleteData": "Supprimer mes données"
+    },
+    "language": {
+      "title": "Langue",
+      "select": "Sélectionner la langue"
+    },
+    "theme": {
+      "title": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "auto": "Automatique"
+    }
+  },
+  "errors": {
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "server": "Erreur serveur. Veuillez réessayer plus tard.",
+    "unauthorized": "Vous devez être connecté pour accéder à ceci.",
+    "forbidden": "Vous n'avez pas la permission d'accéder à ceci.",
+    "notFound": "Ressource introuvable.",
+    "validation": "Veuillez vérifier votre saisie.",
+    "unknown": "Une erreur inattendue s'est produite."
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "confirm": "Confirmer",
+    "back": "Retour",
+    "next": "Suivant",
+    "loading": "Chargement...",
+    "success": "Succès",
+    "error": "Erreur",
+    "yes": "Oui",
+    "no": "Non",
+    "ok": "OK",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "close": "Fermer"
+  },
+  "messages": {
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ceci ?",
+    "unsavedChanges": "Vous avez des modifications non enregistrées. Voulez-vous quitter ?",
+    "success": {
+      "saved": "Enregistré avec succès",
+      "deleted": "Supprimé avec succès",
+      "updated": "Mis à jour avec succès"
+    }
+  },
+  "validation": {
+    "required": "Ce champ est requis",
+    "email": "Veuillez entrer un email valide",
+    "password": {
+      "minLength": "Le mot de passe doit contenir au moins {{min}} caractères",
+      "uppercase": "Le mot de passe doit contenir une lettre majuscule",
+      "lowercase": "Le mot de passe doit contenir une lettre minuscule",
+      "number": "Le mot de passe doit contenir un chiffre",
+      "special": "Le mot de passe doit contenir un caractère spécial"
+    },
+    "match": "{{field1}} et {{field2}} doivent correspondre"
+  },
+  "plurals": {
+    "messages": {
+      "zero": "Aucun message",
+      "one": "1 message",
+      "other": "{{count}} messages"
+    },
+    "notifications": {
+      "zero": "Aucune notification",
+      "one": "1 notification",
+      "other": "{{count}} notifications"
+    },
+    "days": {
+      "one": "1 jour",
+      "other": "{{count}} jours"
+    }
+  }
+}
