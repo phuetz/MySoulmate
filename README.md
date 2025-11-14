@@ -341,12 +341,37 @@ npm run cleanup
 
 Les archives seront créées dans le dossier `archives/` au format JSON.
 
+## 📚 Documentation Complète
+
+### Guides Disponibles
+- **[README.md](README.md)** - Vue d'ensemble et introduction
+- **[IMPROVEMENTS.md](IMPROVEMENTS.md)** - Liste détaillée des 24 améliorations implémentées
+- **[QUICK_START.md](docs/QUICK_START.md)** - Guide de démarrage rapide (5 minutes)
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Guide de déploiement en production
+- **[PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md)** - Checklist pré-production complète
+- **[API Documentation](http://localhost:3000/api-docs)** - Documentation Swagger interactive
+
+### Démarrage Rapide
+
+Si vous débutez, commencez par :
+1. **[Guide de Démarrage Rapide](docs/QUICK_START.md)** - Installation en 5 minutes
+2. **[Documentation API](http://localhost:3000/api-docs)** - Explorer les endpoints
+3. **[IMPROVEMENTS.md](IMPROVEMENTS.md)** - Comprendre les fonctionnalités
+
+### Déploiement Production
+
+Pour déployer en production :
+1. **[Guide de Déploiement](docs/DEPLOYMENT.md)** - Instructions pas-à-pas
+2. **[Checklist Production](docs/PRODUCTION_CHECKLIST.md)** - Vérifications pré-lancement
+3. **[.env.example](.env.example)** - Configuration complète
+
 ## 📞 Support
 
 Pour obtenir de l'aide ou signaler des problèmes :
-- Ouvrir une issue sur GitHub
-- Consulter la documentation
-- Vérifier les logs d'erreur dans `/logs/`
+- **Issues GitHub** : Ouvrir une issue
+- **Documentation** : Consulter les guides dans `/docs`
+- **Email** : support@mysoulmate.app
+- **Logs** : Vérifier les logs dans `/logs/`
 
 ---
 
