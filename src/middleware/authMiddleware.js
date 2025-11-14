@@ -24,7 +24,10 @@ exports.protect = async (req, res, next) => {
 
     try {
       // Vérifier le token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'votre_secret_jwt');
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET environment variable is not set');
+      }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Vérifier si l'utilisateur existe toujours
       const user = await User.findByPk(decoded.id);
