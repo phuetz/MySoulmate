@@ -1,15 +1,39 @@
 {
   "expo": {
-    "name": "bolt-expo-nativewind",
-    "slug": "bolt-expo-nativewind",
+    "name": "MySoulmate",
+    "slug": "mysoulmate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "mysoulmate",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mysoulmate.app",
+      "associatedDomains": ["applinks:mysoulmate.app", "applinks:www.mysoulmate.app"]
+    },
+    "android": {
+      "package": "com.mysoulmate.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "mysoulmate.app",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "www.mysoulmate.app",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -19,7 +43,15 @@
     "extra": {
       "apiUrl": "http://localhost:3000/api/v1"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-linking",
+        {
+          "scheme": "mysoulmate"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

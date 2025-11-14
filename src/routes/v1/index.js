@@ -17,6 +17,7 @@ const calendarRoutes = require('../calendarRoutes');
 const companionRoutes = require('../companionRoutes');
 const paymentRoutes = require('../paymentRoutes');
 const pushRoutes = require('../pushRoutes');
+const gdprRoutes = require('../gdprRoutes');
 
 // Définir les routes pour l'API v1
 router.use('/auth', authRoutes);
@@ -31,5 +32,6 @@ router.use('/calendar', calendarRoutes);
 router.use('/companion', companionRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/push', pushRoutes);
+router.use('/gdpr', gdprRoutes);
 
 module.exports = router;

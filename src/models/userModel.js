@@ -81,6 +81,16 @@ module.exports = (sequelize) => {
     emailVerificationToken: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    deletionRequestedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Timestamp when user requested account deletion'
+    },
+    deletionReason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Reason provided for account deletion'
     }
   }, {
     timestamps: true,

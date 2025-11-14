@@ -440,4 +440,229 @@ curl http://localhost:3000/health/detailed
 
 ---
 
-Dernière mise à jour: $(date +"%Y-%m-%d")
+## Améliorations Supplémentaires (Phase 2)
+
+### 19. GDPR Compliance
+**Fichiers**: `src/controllers/gdprController.js`, `src/routes/gdprRoutes.js`
+
+Conformité complète au RGPD:
+- **Export de données** (Article 15): Export complet des données utilisateur en JSON ou ZIP
+- **Droit à l'oubli** (Article 17): Demande de suppression de compte avec période de grâce de 30 jours
+- **Rectification** (Article 16): Demande de correction de données
+- **Informations de traitement** (Article 13): Documentation complète des traitements
+
+Endpoints disponibles:
+```javascript
+GET  /api/v1/gdpr/export              // Export données
+DELETE /api/v1/gdpr/delete-account     // Demande suppression
+POST /api/v1/gdpr/cancel-deletion      // Annulation suppression
+GET  /api/v1/gdpr/processing-info      // Info traitements
+POST /api/v1/gdpr/rectification        // Demande rectification
+```
+
+### 20. Redis Caching Layer
+**Fichiers**: `src/services/cacheService.js`
+
+Service de cache intelligent avec fallback mémoire:
+- Support Redis avec reconnexion automatique
+- Fallback vers cache mémoire si Redis indisponible
+- Méthodes complètes: get, set, del, exists, expire, incr
+- Middleware de cache pour routes Express
+- Nettoyage automatique des clés expirées
+- Support pattern matching pour suppression en masse
+
+```javascript
+const cache = require('./src/services/cacheService');
+
+// Cache simple
+await cache.set('user:123', userData, 3600);
+const user = await cache.get('user:123');
+
+// Middleware de cache
+app.get('/api/products',
+  cache.cacheMiddleware(300), // 5 minutes
+  getProducts
+);
+
+// Statistiques
+const stats = await cache.stats();
+```
+
+### 21. Content Moderation
+**Fichiers**: `src/utils/contentModeration.js`
+
+Système complet de modération de contenu:
+- Détection de PII (emails, téléphones, cartes de crédit, SSN)
+- Détection de spam et URLs excessives
+- Filtrage de langage inapproprié
+- Score de toxicité (0-1)
+- Sanitization automatique
+- Middleware Express pour validation automatique
+
+```javascript
+const { moderateText, moderationMiddleware } = require('./src/utils/contentModeration');
+
+// Modération manuelle
+const result = moderateText(userMessage, { strictMode: true });
+if (!result.isApproved) {
+  // Rejeter le contenu
+}
+
+// Middleware automatique
+app.post('/api/chat',
+  moderationMiddleware({ fields: ['message'], strictMode: false }),
+  sendMessage
+);
+```
+
+### 22. AI Response Streaming
+**Fichiers**: `src/services/aiStreamingService.js`
+
+Streaming en temps réel des réponses AI via Server-Sent Events:
+- Support OpenAI streaming natif
+- Fallback vers streaming simulé
+- Events: start, token, complete, error
+- Gestion des reconnexions
+- Callbacks de completion
+
+```javascript
+const { streamAIResponse } = require('./src/services/aiStreamingService');
+
+app.get('/api/ai/stream', async (req, res) => {
+  await streamAIResponse({
+    res,
+    prompt: req.query.prompt,
+    options: { userId: req.user.id },
+    onComplete: async (result) => {
+      // Sauvegarder en base de données
+      await saveConversation(result);
+    }
+  });
+});
+```
+
+Côté client:
+```javascript
+const eventSource = new EventSource('/api/ai/stream?prompt=Hello');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'token') {
+    displayToken(data.content);
+  } else if (data.type === 'complete') {
+    displayComplete(data.fullResponse);
+    eventSource.close();
+  }
+};
+```
+
+### 23. Deep Linking
+**Fichiers**: `app.json`, `utils/deepLinking.ts`
+
+Configuration complète pour deep links et universal links:
+- Support iOS Associated Domains
+- Support Android App Links
+- Custom scheme: `mysoulmate://`
+- Universal links: `https://mysoulmate.app`
+- Routes pré-configurées (reset-password, verify-email, gifts, games, etc.)
+- Helpers pour créer et partager des liens
+
+```typescript
+import deepLinking from '@/utils/deepLinking';
+
+// Initialiser au démarrage
+useEffect(() => {
+  const cleanup = deepLinking.initializeDeepLinking();
+  return cleanup;
+}, []);
+
+// Créer des liens
+const resetLink = deepLinking.deepLinkActions.resetPassword('token123');
+const giftLink = deepLinking.deepLinkActions.viewGift('gift-456');
+
+// Partager
+await deepLinking.shareDeepLink('/gift/123', 'Check out this gift!');
+```
+
+### 24. Advanced Rate Limiting
+**Fichiers**: `src/middleware/rateLimitMiddleware.js`
+
+Rate limiting avancé par utilisateur:
+- Limites personnalisées par utilisateur
+- Support tier-based (free, premium, admin)
+- Limites par action (login, API, payment, upload)
+- Basé sur Redis avec fallback mémoire
+- Headers de rate limit (X-RateLimit-*)
+- Reset manuel via API
+
+```javascript
+const { endpointLimits, tieredRateLimit } = require('./src/middleware/rateLimitMiddleware');
+
+// Rate limit spécifique login
+app.post('/api/auth/login', endpointLimits.login, loginHandler);
+
+// Rate limit par tier
+app.post('/api/ai/chat',
+  endpointLimits.aiChat, // free: 10/min, premium: 60/min, admin: 120/min
+  chatHandler
+);
+
+// Vérifier statut
+const status = await getRateLimitStatus(userId, 'api');
+console.log(`${status.remaining} requests remaining`);
+```
+
+---
+
+## Résumé Complet des Améliorations
+
+### Total: 24 Améliorations Majeures
+
+**Phase 1 (18 améliorations)**:
+- Sécurité: 4 (passwords, sessions, CSRF, audit)
+- Performance: 3 (compression, pagination, indexes)
+- Infrastructure: 5 (health checks, WebSocket, feature flags, Docker, CI/CD)
+- UX: 2 (skeleton loaders, haptic feedback)
+- Monitoring: 2 (Prometheus, logging)
+- Documentation: 2 (README, IMPROVEMENTS.md)
+
+**Phase 2 (6 améliorations)**:
+- GDPR Compliance complète
+- Redis caching avec fallback
+- Content moderation avancée
+- AI streaming avec SSE
+- Deep linking iOS/Android
+- Rate limiting par utilisateur
+
+### Nouveaux Fichiers (Phase 2)
+- `src/controllers/gdprController.js`
+- `src/routes/gdprRoutes.js`
+- `src/services/cacheService.js`
+- `src/utils/contentModeration.js`
+- `src/services/aiStreamingService.js`
+- `utils/deepLinking.ts`
+- `src/middleware/rateLimitMiddleware.js`
+
+### Fichiers Modifiés (Phase 2)
+- `src/models/userModel.js` (champs GDPR)
+- `src/routes/v1/index.js` (routes GDPR)
+- `app.json` (deep linking config)
+
+### Variables d'Environnement Ajoutées
+```env
+# Redis (optionnel)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+
+# AI Streaming
+AI_STREAMING_ENABLED=true
+AI_MODEL=gpt-3.5-turbo
+AI_MAX_TOKENS=500
+AI_TEMPERATURE=0.7
+```
+
+---
+
+Dernière mise à jour: 2025-01-14
