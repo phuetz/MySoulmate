@@ -5,10 +5,12 @@ export interface SubscriptionPlan {
   name: string;
   description: string;
   price: number;
-  billingCycle: 'weekly' | 'monthly' | 'yearly';
+  billingCycle: 'weekly' | 'monthly' | 'yearly' | 'lifetime';
   features: string[];
   isActive: boolean;
   trialDays?: number;
+  isPopular?: boolean;
+  savingsPercentage?: number;
 }
 
 export interface UserInfo {
@@ -56,55 +58,110 @@ export interface SubscriptionFilter {
 // In a real application, you would integrate with a payment provider like Stripe
 export const subscriptionService = {
   async getPlans(): Promise<SubscriptionPlan[]> {
-    // In a real app, this would make an API call
-    // For demo purposes, we'll return mock data
+    // Updated pricing based on competitive analysis 2025
+    // Sweet spot: $9.99-$13.99/month
     return [
       {
-        id: 'plan_weekly',
-        name: 'Weekly',
-        description: 'Pay weekly for maximum flexibility',
-        price: 6.99,
-        billingCycle: 'weekly',
-        features: [
-          'All premium avatars',
-          'NSFW content',
-          'Voice and video calls',
-          'AR experiences',
-        ],
-        isActive: true
-      },
-      {
-        id: 'plan_monthly',
-        name: 'Monthly',
-        description: 'Our most popular plan',
-        price: 16.99,
+        id: 'plan_basic',
+        name: 'Basic',
+        description: 'Perfect for getting started',
+        price: 7.99,
         billingCycle: 'monthly',
         features: [
-          'All premium avatars',
-          'NSFW content',
-          'Voice and video calls',
-          'AR experiences',
-          'Priority support',
+          'AI Chat unlimited',
+          '1 companion',
+          '3 Story chapters/month',
+          'Light ads',
+          'Voice calls (5 min/day)',
+          'Basic AR features'
         ],
-        isActive: true
+        isActive: true,
+        trialDays: 7,
+        isPopular: false
+      },
+      {
+        id: 'plan_premium',
+        name: 'Premium',
+        description: 'Most popular - best value!',
+        price: 12.99,
+        billingCycle: 'monthly',
+        features: [
+          'Everything in Basic',
+          'NSFW mode',
+          'Stories unlimited',
+          'Voice/Video unlimited',
+          '5 AI images/month',
+          'No ads',
+          'Priority support'
+        ],
+        isActive: true,
+        trialDays: 7,
+        isPopular: true,
+        savingsPercentage: 38 // vs old $16.99
+      },
+      {
+        id: 'plan_ultimate',
+        name: 'Ultimate',
+        description: 'Everything + exclusive features',
+        price: 19.99,
+        billingCycle: 'monthly',
+        features: [
+          'Everything in Premium',
+          'Voice cloning',
+          'AI images unlimited',
+          'Multiple companions (3)',
+          'Priority AI (faster responses)',
+          'Early access features',
+          'Exclusive seasonal content',
+          'Battle Pass included'
+        ],
+        isActive: true,
+        trialDays: 7,
+        isPopular: false
       },
       {
         id: 'plan_yearly',
-        name: 'Yearly',
-        description: 'Best value - save 51%',
+        name: 'Yearly Premium',
+        description: 'Save 35% - Best annual deal',
         price: 99.99,
         billingCycle: 'yearly',
         features: [
-          'All premium avatars',
-          'NSFW content',
-          'Voice and video calls',
-          'AR experiences',
+          'All Premium features',
+          'NSFW mode',
+          'Stories unlimited',
+          'Voice/Video unlimited',
+          '10 AI images/month',
+          'No ads',
           'Priority support',
           'Exclusive seasonal content',
-          'Early access to new features',
+          'Early access to new features'
         ],
         isActive: true,
-        trialDays: 14
+        trialDays: 7,
+        isPopular: false,
+        savingsPercentage: 35 // vs monthly premium $12.99 * 12 = $155.88
+      },
+      {
+        id: 'plan_lifetime',
+        name: 'Lifetime',
+        description: 'Pay once, enjoy forever!',
+        price: 199.99,
+        billingCycle: 'lifetime',
+        features: [
+          'All Ultimate features forever',
+          'Voice cloning',
+          'AI images unlimited',
+          'Multiple companions (3)',
+          'Priority AI (fastest)',
+          'Early access to ALL features',
+          'Exclusive lifetime badge',
+          'Future features included',
+          'VIP support',
+          'No recurring payments ever!'
+        ],
+        isActive: true,
+        isPopular: false,
+        savingsPercentage: 50 // vs Replika's $299.99
       }
     ];
   },
