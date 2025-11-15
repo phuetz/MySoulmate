@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Heart, Gift, Clock, Star, MessageCircle, Mic, Video, Trophy, Target, Zap, Sparkles } from 'lucide-react-native';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { useAppState } from '@/context/AppStateContext';
+import { emotionalStates, avatarStyles } from '@/data/companionData';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -15,6 +16,9 @@ export default function HomeScreen() {
     setVerified(isVerified);
     setShowAgeVerification(false);
   };
+
+  const currentMood = emotionalStates.find(m => m.id === companion.currentMood) || emotionalStates[0];
+  const currentAvatarStyle = avatarStyles.find(s => s.id === companion.avatarStyle) || avatarStyles[0];
 
 
   return (
@@ -37,14 +41,26 @@ export default function HomeScreen() {
                 style={styles.avatar}
               />
               <View style={styles.avatarGlow} />
+              <View style={[styles.moodIndicator, { backgroundColor: currentMood.color }]}>
+                <Text style={styles.moodEmoji}>{currentMood.emoji}</Text>
+              </View>
             </View>
             <View style={styles.companionInfo}>
               <Text style={styles.name}>{companion.name}</Text>
-              <View style={styles.relationshipContainer}>
-                <Heart size={18} color="#FFFFFF" fill="#FFFFFF" style={styles.relationshipIcon} />
-                <Text style={styles.relationshipText}>
-                  {companion.relationshipStatus}
-                </Text>
+              <View style={styles.infoRow}>
+                <View style={styles.relationshipContainer}>
+                  <Heart size={16} color="#FFFFFF" fill="#FFFFFF" style={styles.relationshipIcon} />
+                  <Text style={styles.relationshipText}>
+                    {companion.relationshipStatus}
+                  </Text>
+                </View>
+                <View style={styles.styleTag}>
+                  <Text style={styles.styleTagIcon}>{currentAvatarStyle.icon}</Text>
+                  <Text style={styles.styleTagText}>{currentAvatarStyle.name}</Text>
+                </View>
+              </View>
+              <View style={styles.moodTag}>
+                <Text style={styles.moodTagText}>Feeling {currentMood.name}</Text>
               </View>
             </View>
             <View style={styles.premiumBadge}>
@@ -206,6 +222,26 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
+  moodIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  moodEmoji: {
+    fontSize: 16,
+  },
   companionInfo: {
     flex: 1,
     marginLeft: 20,
@@ -214,28 +250,63 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 6,
+    marginBottom: 8,
     textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    gap: 8,
+  },
   relationshipContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
   },
   relationshipText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#FFFFFF',
     fontWeight: '600',
-    marginLeft: 6,
+    marginLeft: 4,
   },
   relationshipIcon: {
     marginRight: 2,
+  },
+  styleTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    gap: 4,
+  },
+  styleTagIcon: {
+    fontSize: 12,
+  },
+  styleTagText: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  moodTag: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  moodTagText: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    opacity: 0.95,
   },
   premiumBadge: {
     position: 'absolute',

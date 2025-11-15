@@ -20,6 +20,8 @@ export interface CompanionData {
   name: string;
   avatarUrl: string;
   avatarName?: string;
+  avatarStyle?: 'realistic' | 'anime' | 'hybrid' | 'cyberpunk'; // New: Avatar style preference
+  currentMood?: 'happy' | 'excited' | 'loving' | 'playful' | 'shy' | 'thinking' | 'curious' | 'relaxed'; // New: Current emotional state
   videoUrl?: string;
   personalityTraits: PersonalityTrait[];
   interactions: number;
@@ -43,6 +45,7 @@ export interface CompanionData {
   videoCallHistory?: { duration: number; timestamp: string }[]; // Video call logs
   affection?: number; // Affection level increased by gifts
   activeGiftEffects?: GiftEffect[]; // Currently active gift effects
+  voiceTone?: 'soft' | 'energetic' | 'sultry' | 'professional'; // New: Voice customization
 }
 
 interface AppStateContextType {
@@ -72,6 +75,9 @@ const defaultCompanion: CompanionData = {
   id: '1',
   name: 'Sophia',
   avatarUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600',
+  avatarStyle: 'realistic',
+  currentMood: 'happy',
+  voiceTone: 'soft',
   videoUrl: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=600',
   personalityTraits: [
     { id: 1, name: 'Caring', intensity: 3 },

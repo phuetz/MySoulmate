@@ -1,20 +1,38 @@
 export const personalityTraits = [
-  { id: 1, name: 'Caring', premium: false },
-  { id: 2, name: 'Playful', premium: false },
-  { id: 3, name: 'Intelligent', premium: false },
-  { id: 4, name: 'Creative', premium: false },
-  { id: 5, name: 'Witty', premium: false },
-  { id: 6, name: 'Romantic', premium: false },
-  { id: 7, name: 'Adventurous', premium: false },
-  { id: 8, name: 'Calm', premium: false },
-  { id: 9, name: 'Passionate', premium: true },
-  { id: 10, name: 'Teasing', premium: true },
-  { id: 11, name: 'Mysterious', premium: true },
-  { id: 12, name: 'Sensual', premium: true },
-  { id: 13, name: 'Dominant', premium: true },
-  { id: 14, name: 'Submissive', premium: true },
-  { id: 15, name: 'Sarcastic', premium: false },
-  { id: 16, name: 'Empathetic', premium: false },
+  { id: 1, name: 'Caring', icon: '💝', premium: false },
+  { id: 2, name: 'Playful', icon: '🎭', premium: false },
+  { id: 3, name: 'Intelligent', icon: '🧠', premium: false },
+  { id: 4, name: 'Creative', icon: '🎨', premium: false },
+  { id: 5, name: 'Witty', icon: '😄', premium: false },
+  { id: 6, name: 'Romantic', icon: '💕', premium: false },
+  { id: 7, name: 'Adventurous', icon: '🗺️', premium: false },
+  { id: 8, name: 'Calm', icon: '☮️', premium: false },
+  { id: 9, name: 'Passionate', icon: '🔥', premium: true },
+  { id: 10, name: 'Teasing', icon: '😏', premium: true },
+  { id: 11, name: 'Mysterious', icon: '🌙', premium: true },
+  { id: 12, name: 'Sensual', icon: '🌹', premium: true },
+  { id: 13, name: 'Dominant', icon: '👑', premium: true },
+  { id: 14, name: 'Submissive', icon: '💫', premium: true },
+  { id: 15, name: 'Sarcastic', icon: '😎', premium: false },
+  { id: 16, name: 'Empathetic', icon: '🤗', premium: false },
+];
+
+export const avatarStyles = [
+  { id: 'realistic', name: 'Realistic', description: 'Photorealistic human appearance', icon: '📸' },
+  { id: 'anime', name: 'Anime', description: '2D anime-style character', icon: '🎌' },
+  { id: 'hybrid', name: 'Hybrid', description: 'Semi-realistic anime blend', icon: '✨', premium: true },
+  { id: 'cyberpunk', name: 'Cyberpunk', description: 'Futuristic neon aesthetic', icon: '⚡', premium: true },
+];
+
+export const emotionalStates = [
+  { id: 'happy', name: 'Happy', emoji: '😊', color: '#FFD700' },
+  { id: 'excited', name: 'Excited', emoji: '🤩', color: '#FF6B8A' },
+  { id: 'loving', name: 'Loving', emoji: '😍', color: '#FF1493' },
+  { id: 'playful', name: 'Playful', emoji: '😜', color: '#9C6ADE' },
+  { id: 'shy', name: 'Shy', emoji: '😊', color: '#FFC0CB' },
+  { id: 'thinking', name: 'Thinking', emoji: '🤔', color: '#4169E1' },
+  { id: 'curious', name: 'Curious', emoji: '🧐', color: '#20B2AA' },
+  { id: 'relaxed', name: 'Relaxed', emoji: '😌', color: '#87CEEB' },
 ];
 
 export const avatarOptions = [
