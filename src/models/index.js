@@ -18,7 +18,13 @@ const UserGiftModel = require('./userGiftModel')(sequelize);
 const SessionModel = require('./sessionModel')(sequelize);
 const SubscriptionModel = require('./subscriptionModel')(sequelize);
 const PushTokenModel = require('./pushTokenModel')(sequelize);
+const StoryModel = require('./storyModel')(sequelize);
+const ChapterModel = require('./chapterModel')(sequelize);
+const ChoiceModel = require('./choiceModel')(sequelize);
+const UserStoryProgressModel = require('./userStoryProgressModel')(sequelize);
+const DailyStreakModel = require('./dailyStreakModel')(sequelize);
 const giftSeedData = require('../seed/gifts');
+const { stories: storySeedData, chapters: chapterSeedData, choices: choiceSeedData } = require('../seed/stories');
 
 // Définition des associations
 UserModel.hasMany(ProductModel, { 
@@ -83,6 +89,60 @@ PushTokenModel.belongsTo(UserModel, {
   as: 'user'
 });
 
+// Story Mode Associations
+StoryModel.hasMany(ChapterModel, {
+  foreignKey: 'storyId',
+  as: 'chapters',
+  onDelete: 'CASCADE'
+});
+ChapterModel.belongsTo(StoryModel, {
+  foreignKey: 'storyId',
+  as: 'story'
+});
+
+ChapterModel.hasMany(ChoiceModel, {
+  foreignKey: 'chapterId',
+  as: 'choices',
+  onDelete: 'CASCADE'
+});
+ChoiceModel.belongsTo(ChapterModel, {
+  foreignKey: 'chapterId',
+  as: 'chapter'
+});
+
+UserModel.hasMany(UserStoryProgressModel, {
+  foreignKey: 'userId',
+  as: 'storyProgress'
+});
+UserStoryProgressModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+StoryModel.hasMany(UserStoryProgressModel, {
+  foreignKey: 'storyId',
+  as: 'userProgress'
+});
+UserStoryProgressModel.belongsTo(StoryModel, {
+  foreignKey: 'storyId',
+  as: 'story'
+});
+
+UserStoryProgressModel.belongsTo(ChapterModel, {
+  foreignKey: 'currentChapterId',
+  as: 'currentChapter'
+});
+
+// Daily Streak Associations
+UserModel.hasOne(DailyStreakModel, {
+  foreignKey: 'userId',
+  as: 'dailyStreak'
+});
+DailyStreakModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
 // Fonction pour tester la connexion à la base de données
 const testConnection = async () => {
   try {
@@ -108,6 +168,20 @@ const initializeDatabase = async () => {
       await GiftModel.bulkCreate(giftSeedData);
       logger.info('Gift data seeded');
     }
+
+    // Seed stories if table empty
+    const storyCount = await StoryModel.count();
+    if (storyCount === 0) {
+      await StoryModel.bulkCreate(storySeedData);
+      logger.info('Story data seeded');
+
+      await ChapterModel.bulkCreate(chapterSeedData);
+      logger.info('Chapter data seeded');
+
+      await ChoiceModel.bulkCreate(choiceSeedData);
+      logger.info('Choice data seeded');
+    }
+
     return true;
   } catch (error) {
     logger.error(`Erreur lors de l'initialisation de la base de données: ${error.message}`);
@@ -127,5 +201,10 @@ module.exports = {
   UserGift: UserGiftModel,
   Session: SessionModel,
   Subscription: SubscriptionModel,
-  PushToken: PushTokenModel
+  PushToken: PushTokenModel,
+  Story: StoryModel,
+  Chapter: ChapterModel,
+  Choice: ChoiceModel,
+  UserStoryProgress: UserStoryProgressModel,
+  DailyStreak: DailyStreakModel
 };
