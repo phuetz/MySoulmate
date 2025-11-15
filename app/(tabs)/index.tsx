@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Heart, Gift, Clock, Star, MessageCircle, Mic, Video, Trophy, Target, Zap } from 'lucide-react-native';
+import { Heart, Gift, Clock, Star, MessageCircle, Mic, Video, Trophy, Target, Zap, Sparkles } from 'lucide-react-native';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
 import { useAppState } from '@/context/AppStateContext';
 
@@ -21,23 +22,40 @@ export default function HomeScreen() {
       {showAgeVerification && (
         <AgeVerificationModal onVerify={handleVerification} />
       )}
-      
+
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Image 
-            source={{ uri: companion.avatarUrl }} 
-            style={styles.avatar} 
-          />
-          <View style={styles.companionInfo}>
-            <Text style={styles.name}>{companion.name}</Text>
-            <View style={styles.relationshipContainer}>
-              <Text style={styles.relationshipText}>
-                {companion.relationshipStatus}
-              </Text>
-              <Heart size={16} color="#FF6B8A" style={styles.relationshipIcon} />
+        <LinearGradient
+          colors={['#FF6B8A', '#9C6ADE']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.headerGradient}
+        >
+          <View style={styles.header}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={{ uri: companion.avatarUrl }}
+                style={styles.avatar}
+              />
+              <View style={styles.avatarGlow} />
+            </View>
+            <View style={styles.companionInfo}>
+              <Text style={styles.name}>{companion.name}</Text>
+              <View style={styles.relationshipContainer}>
+                <Heart size={18} color="#FFFFFF" fill="#FFFFFF" style={styles.relationshipIcon} />
+                <Text style={styles.relationshipText}>
+                  {companion.relationshipStatus}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.premiumBadge}>
+              {isPremium && (
+                <View style={styles.premiumIconContainer}>
+                  <Star size={16} color="#FFD700" fill="#FFD700" />
+                </View>
+              )}
             </View>
           </View>
-        </View>
+        </LinearGradient>
 
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
@@ -121,8 +139,13 @@ export default function HomeScreen() {
         </View>
 
         {!isPremium && (
-          <View style={styles.premiumBanner}>
-            <Star size={24} color="#FFD700" />
+          <LinearGradient
+            colors={['#9C6ADE', '#6B5FF6']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.premiumBanner}
+          >
+            <Sparkles size={32} color="#FFD700" fill="#FFD700" />
             <View style={styles.premiumTextContainer}>
               <Text style={styles.premiumTitle}>Upgrade to Premium</Text>
               <Text style={styles.premiumDescription}>
@@ -132,7 +155,7 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.premiumButton} onPress={() => router.push('/settings')}>
               <Text style={styles.premiumButtonText}>Upgrade</Text>
             </TouchableOpacity>
-          </View>
+          </LinearGradient>
         )}
       </ScrollView>
     </View>
@@ -142,233 +165,283 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F5F7FA',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    paddingBottom: 32,
+  },
+  headerGradient: {
     paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    marginBottom: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+  },
+  avatarContainer: {
+    position: 'relative',
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
     backgroundColor: '#E1E1E1',
   },
+  avatarGlow: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.3,
+    top: 0,
+    left: 0,
+  },
   companionInfo: {
-    marginLeft: 16,
+    flex: 1,
+    marginLeft: 20,
   },
   name: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#333333',
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   relationshipContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
   },
   relationshipText: {
-    fontSize: 16,
-    color: '#666666',
-    marginRight: 6,
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    marginLeft: 6,
   },
   relationshipIcon: {
-    marginTop: 2,
+    marginRight: 2,
+  },
+  premiumBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+  },
+  premiumIconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 20,
+    padding: 8,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 20,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#9C6ADE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#333333',
-    marginTop: 8,
+    marginTop: 10,
   },
   statLabel: {
     fontSize: 12,
-    color: '#777777',
-    marginTop: 4,
+    color: '#999999',
+    marginTop: 6,
+    fontWeight: '500',
   },
   progressContainer: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 20,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#9C6ADE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   progressTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#333333',
   },
   xpText: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '700',
     color: '#9C6ADE',
   },
   progressBar: {
-    height: 8,
-    backgroundColor: '#E1E1E1',
-    borderRadius: 4,
+    height: 10,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 10,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#FF6B8A',
-    borderRadius: 4,
+    borderRadius: 10,
   },
   progressSubtext: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666666',
     textAlign: 'center',
+    fontWeight: '500',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#333333',
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingHorizontal: 20,
   },
   activityFeed: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 20,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#9C6ADE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   activityItem: {
     flexDirection: 'row',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#F5F5F5',
   },
   activityIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FFF0F3',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   activityContent: {
     flex: 1,
+    justifyContent: 'center',
   },
   activityText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333333',
-    lineHeight: 20,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   activityTime: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#999999',
     marginTop: 4,
   },
   quickActions: {
     backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 20,
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#9C6ADE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 10,
   },
   actionButton: {
     flex: 1,
-    marginHorizontal: 6,
     backgroundColor: '#FF6B8A',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 16,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
     shadowColor: '#FF6B8A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   actionButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 8,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 6,
   },
   premiumBanner: {
-    backgroundColor: '#F8F2FF',
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: 20,
+    padding: 20,
+    borderRadius: 20,
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#E0D0FF',
     flexDirection: 'row',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   premiumTextContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
   },
   premiumTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#9C6ADE',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
   premiumDescription: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 2,
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    lineHeight: 20,
   },
   premiumButton: {
-    backgroundColor: '#9C6ADE',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
   },
   premiumButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    color: '#9C6ADE',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

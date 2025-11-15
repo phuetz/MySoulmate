@@ -7,10 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { Heart, Lock, Mail } from 'lucide-react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 import { useAuth } from '@/context/AuthContext';
@@ -102,38 +105,56 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#FF6B8A', '#9C6ADE', '#6B5FF6']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <View style={styles.headerSection}>
+        <Heart size={60} color="#FFFFFF" style={styles.logoIcon} />
+        <Text style={styles.appTitle}>MySoulmate</Text>
+        <Text style={styles.appSubtitle}>Welcome back to your companion</Text>
+      </View>
+
       <View style={styles.formContainer}>
         <Text style={styles.title}>Login</Text>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, errors.email ? styles.inputError : {}]}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.inputIconContainer}>
+            <Mail size={20} color="#9C6ADE" />
+            <TextInput
+              style={[styles.input, errors.email ? styles.inputError : {}]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Enter your email"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
           {errors.email ? (
             <Text style={styles.errorText}>{errors.email}</Text>
           ) : null}
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={[styles.input, errors.password ? styles.inputError : {}]}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            secureTextEntry
-          />
+          <View style={styles.inputIconContainer}>
+            <Lock size={20} color="#9C6ADE" />
+            <TextInput
+              style={[styles.input, errors.password ? styles.inputError : {}]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your password"
+              placeholderTextColor="#999"
+              secureTextEntry
+            />
+          </View>
           {errors.password ? (
             <Text style={styles.errorText}>{errors.password}</Text>
           ) : null}
         </View>
+
         <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
           <Text style={styles.forgotPasswordLink}>Forgot Password?</Text>
         </TouchableOpacity>
@@ -143,11 +164,18 @@ export default function LoginScreen() {
           onPress={handleLogin}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.loginButtonText}>Login</Text>
-          )}
+          <LinearGradient
+            colors={['#FF6B8A', '#FF8FA3']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.buttonGradient}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.loginButtonText}>Login</Text>
+            )}
+          </LinearGradient>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -176,50 +204,74 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
     justifyContent: 'center',
     padding: 20,
   },
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logoIcon: {
+    marginBottom: 16,
+  },
+  appTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.15)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  appSubtitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    textAlign: 'center',
+  },
   formContainer: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    padding: 28,
+    borderRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    backdropFilter: 'blur(10px)',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: '#333333',
-    marginBottom: 24,
+    marginBottom: 28,
     textAlign: 'center',
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#666666',
-    marginBottom: 8,
+  inputIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 16,
+    paddingLeft: 16,
+    borderWidth: 2,
+    borderColor: '#E8E8E8',
   },
   input: {
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    padding: 12,
+    flex: 1,
+    padding: 16,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#E1E1E1',
+    color: '#333',
+    backgroundColor: 'transparent',
   },
   inputError: {
     borderColor: '#FF3B30',
@@ -227,63 +279,83 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#FF3B30',
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 6,
+    marginLeft: 4,
   },
   loginButton: {
-    backgroundColor: '#FF6B8A',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: 16,
+    marginTop: 24,
+    overflow: 'hidden',
+    shadowColor: '#FF6B8A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  buttonGradient: {
+    padding: 18,
     alignItems: 'center',
-    marginTop: 16,
+    justifyContent: 'center',
   },
   loginButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   biometricButton: {
-    backgroundColor: '#9C6ADE',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: 'rgba(156, 106, 222, 0.1)',
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
     marginTop: 12,
+    borderWidth: 2,
+    borderColor: '#9C6ADE',
   },
   biometricButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
+    color: '#9C6ADE',
+    fontSize: 15,
     fontWeight: '600',
   },
   googleButton: {
-    backgroundColor: '#4285F4',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
     marginTop: 12,
+    borderWidth: 2,
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   googleButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
+    color: '#333',
+    fontSize: 15,
     fontWeight: '600',
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: 28,
   },
   registerText: {
     color: '#666666',
-    fontSize: 14,
+    fontSize: 15,
   },
   registerLink: {
     color: '#FF6B8A',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 4,
+    fontSize: 15,
+    fontWeight: '700',
+    marginLeft: 6,
   },
   forgotPasswordLink: {
-    color: '#FF6B8A',
+    color: '#9C6ADE',
     fontSize: 14,
-    marginTop: 8,
+    marginTop: 12,
     alignSelf: 'flex-end',
+    fontWeight: '600',
   },
 });

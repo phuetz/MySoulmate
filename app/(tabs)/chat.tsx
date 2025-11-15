@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
-import { Smile, Image as ImageIcon, Send, Mic } from 'lucide-react-native';
+import { Smile, Image as ImageIcon, Send, Mic, MoreVertical } from 'lucide-react-native';
 import { useAppState } from '@/context/AppStateContext';
 import PremiumFeatureModal from '@/components/PremiumFeatureModal';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -269,27 +270,43 @@ export default function ChatScreen() {
   );
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={80}
     >
-      <View style={styles.header}>
+      <LinearGradient
+        colors={['#FF6B8A', '#9C6ADE']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
         <View style={styles.headerContent}>
-          <Image
-            source={{ uri: companion.avatarUrl }}
-            style={styles.avatar}
-          />
-          <View>
+          <View style={styles.avatarContainer}>
+            <Image
+              source={{ uri: companion.avatarUrl }}
+              style={styles.avatar}
+            />
+            <View style={styles.onlineIndicator} />
+          </View>
+          <View style={styles.headerInfo}>
             <Text style={styles.name}>{companion.name}</Text>
             {isTyping ? (
-              <Text style={styles.typingIndicator}>typing...</Text>
+              <View style={styles.typingContainer}>
+                <View style={styles.typingDot} />
+                <View style={[styles.typingDot, styles.typingDot2]} />
+                <View style={[styles.typingDot, styles.typingDot3]} />
+                <Text style={styles.typingIndicator}>typing...</Text>
+              </View>
             ) : (
-              <Text style={styles.status}>Online</Text>
+              <Text style={styles.status}>Active now</Text>
             )}
           </View>
+          <TouchableOpacity style={styles.moreButton}>
+            <MoreVertical size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
       <OfflineBanner isConnected={isConnected} />
 
       <View style={styles.searchContainer}>
@@ -390,71 +407,112 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F5F7FA',
   },
   header: {
-    backgroundColor: '#FFFFFF',
     paddingTop: 50,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    paddingBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+  },
+  avatarContainer: {
+    position: 'relative',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
     backgroundColor: '#E1E1E1',
   },
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  headerInfo: {
+    flex: 1,
+    marginLeft: 14,
+  },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 2,
   },
   status: {
-    fontSize: 12,
-    color: '#4CAF50',
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.9,
+  },
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  typingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
+    marginRight: 4,
+    opacity: 0.7,
+  },
+  typingDot2: {
+    opacity: 0.5,
+  },
+  typingDot3: {
+    opacity: 0.3,
   },
   typingIndicator: {
-    fontSize: 12,
-    color: '#9C6ADE',
+    fontSize: 13,
+    color: '#FFFFFF',
     fontStyle: 'italic',
+    marginLeft: 6,
+    opacity: 0.9,
+  },
+  moreButton: {
+    padding: 8,
   },
   searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   searchInput: {
-    backgroundColor: '#F0F0F0',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    fontSize: 14,
+    backgroundColor: '#F5F7FA',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 15,
     color: '#333333',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
   },
   messageList: {
     flex: 1,
   },
   messageListContent: {
-    padding: 16,
-    paddingTop: 8,
+    padding: 20,
+    paddingTop: 12,
   },
   messageBubble: {
-    marginBottom: 16,
-    maxWidth: '80%',
+    marginBottom: 20,
+    maxWidth: '75%',
     flexDirection: 'row',
     alignItems: 'flex-end',
   },
@@ -465,27 +523,34 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   messageBubbleAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: 10,
     backgroundColor: '#E1E1E1',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   messageContent: {
-    padding: 12,
-    borderRadius: 18,
+    padding: 14,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   userContent: {
     backgroundColor: '#FF6B8A',
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 6,
   },
   companionContent: {
-    backgroundColor: '#F0F0F0',
-    borderBottomLeftRadius: 4,
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 6,
   },
   messageText: {
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 22,
   },
   userText: {
     color: '#FFFFFF',
@@ -494,42 +559,52 @@ const styles = StyleSheet.create({
     color: '#333333',
   },
   timestamp: {
-    fontSize: 10,
-    color: 'rgba(0, 0, 0, 0.5)',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.7)',
     alignSelf: 'flex-end',
-    marginTop: 4,
+    marginTop: 6,
   },
   inputContainer: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 8,
-    paddingHorizontal: 16,
+    borderTopColor: '#E8E8E8',
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 32 : 12,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 8,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
   },
   inputButton: {
-    padding: 8,
+    padding: 10,
+    backgroundColor: '#F5F7FA',
+    borderRadius: 20,
+    marginRight: 8,
   },
   textInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#F5F7FA',
     borderRadius: 24,
-    paddingHorizontal: 12,
-    marginHorizontal: 8,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
   },
   input: {
     flex: 1,
     fontSize: 16,
-    lineHeight: 20,
+    lineHeight: 22,
     maxHeight: 100,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 12,
+    paddingBottom: 12,
     paddingRight: 8,
     color: '#333333',
   },
@@ -540,12 +615,22 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#E8E8E8',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   sendButtonActive: {
     backgroundColor: '#FF6B8A',
+    shadowColor: '#FF6B8A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   chatExtras: {
     flexDirection: 'row',
