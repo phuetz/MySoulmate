@@ -19,6 +19,8 @@ const paymentRoutes = require('../paymentRoutes');
 const pushRoutes = require('../pushRoutes');
 const storyRoutes = require('../storyRoutes');
 const dailyStreakRoutes = require('../dailyStreakRoutes');
+const aiImageRoutes = require('../aiImageRoutes');
+const photoAnalysisRoutes = require('../photoAnalysisRoutes');
 
 // Définir les routes pour l'API v1
 router.use('/auth', authRoutes);
@@ -35,5 +37,7 @@ router.use('/payments', paymentRoutes);
 router.use('/push', pushRoutes);
 router.use('/stories', storyRoutes);
 router.use('/streaks', dailyStreakRoutes);
+router.use('/ai-images', aiImageRoutes);
+router.use('/photo-analysis', photoAnalysisRoutes);
 
 module.exports = router;

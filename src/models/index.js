@@ -23,6 +23,7 @@ const ChapterModel = require('./chapterModel')(sequelize);
 const ChoiceModel = require('./choiceModel')(sequelize);
 const UserStoryProgressModel = require('./userStoryProgressModel')(sequelize);
 const DailyStreakModel = require('./dailyStreakModel')(sequelize);
+const AIImageModel = require('./aiImageModel')(sequelize);
 const giftSeedData = require('../seed/gifts');
 const { stories: storySeedData, chapters: chapterSeedData, choices: choiceSeedData } = require('../seed/stories');
 
@@ -143,6 +144,16 @@ DailyStreakModel.belongsTo(UserModel, {
   as: 'user'
 });
 
+// AI Image Associations
+UserModel.hasMany(AIImageModel, {
+  foreignKey: 'userId',
+  as: 'aiImages'
+});
+AIImageModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
 // Fonction pour tester la connexion à la base de données
 const testConnection = async () => {
   try {
@@ -206,5 +217,6 @@ module.exports = {
   Chapter: ChapterModel,
   Choice: ChoiceModel,
   UserStoryProgress: UserStoryProgressModel,
-  DailyStreak: DailyStreakModel
+  DailyStreak: DailyStreakModel,
+  AIImage: AIImageModel
 };
