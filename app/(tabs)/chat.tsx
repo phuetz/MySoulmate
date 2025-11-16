@@ -225,49 +225,72 @@ export default function ChatScreen() {
     }
   };
 
-  const renderMessageItem = ({ item }) => (
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onLongPress={() => {
-        setSelectedMessageId(item.id);
-        setReactionPickerVisible(true);
-      }}
-    >
-      <View style={[styles.messageBubble, item.isUser ? styles.userBubble : styles.companionBubble]}>
-        {!item.isUser && (
-          <Image
-            source={{ uri: companion.avatarUrl }}
-            style={styles.messageBubbleAvatar}
-          />
-        )}
-        <View style={[styles.messageContent, item.isUser ? styles.userContent : styles.companionContent]}>
-          {item.image && (
-            <Image source={{ uri: item.image }} style={styles.attachmentImage} />
+  const renderMessageItem = ({ item, index }) => {
+    // Check if this is the first message in a group
+    const isFirstInGroup =
+      index === 0 ||
+      filteredMessages[index - 1].isUser !== item.isUser ||
+      (new Date(item.timestamp).getTime() - new Date(filteredMessages[index - 1].timestamp).getTime()) > 300000; // 5 min
+
+    // Check if this is the last message in a group
+    const isLastInGroup =
+      index === filteredMessages.length - 1 ||
+      filteredMessages[index + 1].isUser !== item.isUser ||
+      (new Date(filteredMessages[index + 1].timestamp).getTime() - new Date(item.timestamp).getTime()) > 300000;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onLongPress={() => {
+          setSelectedMessageId(item.id);
+          setReactionPickerVisible(true);
+        }}
+      >
+        <View style={[
+          styles.messageBubble,
+          item.isUser ? styles.userBubble : styles.companionBubble,
+          !isLastInGroup && styles.groupedMessage
+        ]}>
+          {!item.isUser && isFirstInGroup && (
+            <Image
+              source={{ uri: companion.avatarUrl }}
+              style={styles.messageBubbleAvatar}
+            />
           )}
-          {item.audio && (
-            <TouchableOpacity onPress={() => playAudio(item.audio)} style={styles.audioButton}>
-              <Text style={styles.audioButtonText}>Play Audio</Text>
-            </TouchableOpacity>
+          {!item.isUser && !isFirstInGroup && (
+            <View style={styles.avatarSpacer} />
           )}
-          {item.text !== undefined && (
-            <Text style={[styles.messageText, item.isUser ? styles.userText : styles.companionText]}>
-              {item.text}
-            </Text>
-          )}
-          <Text style={styles.timestamp}>
-            {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </Text>
-          {item.reactions && item.reactions.length > 0 && (
-            <View style={styles.reactionsContainer}>
-              {item.reactions.map((r: string, idx: number) => (
-                <Text key={idx} style={styles.reaction}>{r}</Text>
-              ))}
-            </View>
-          )}
+          <View style={[styles.messageContent, item.isUser ? styles.userContent : styles.companionContent]}>
+            {item.image && (
+              <Image source={{ uri: item.image }} style={styles.attachmentImage} />
+            )}
+            {item.audio && (
+              <TouchableOpacity onPress={() => playAudio(item.audio)} style={styles.audioButton}>
+                <Text style={styles.audioButtonText}>Play Audio</Text>
+              </TouchableOpacity>
+            )}
+            {item.text !== undefined && (
+              <Text style={[styles.messageText, item.isUser ? styles.userText : styles.companionText]}>
+                {item.text}
+              </Text>
+            )}
+            {isLastInGroup && (
+              <Text style={styles.timestamp}>
+                {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+            )}
+            {item.reactions && item.reactions.length > 0 && (
+              <View style={styles.reactionsContainer}>
+                {item.reactions.map((r: string, idx: number) => (
+                  <Text key={idx} style={styles.reaction}>{r}</Text>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <KeyboardAvoidingView
@@ -340,10 +363,24 @@ export default function ChatScreen() {
 
       <View style={styles.inputContainer}>
         <View style={styles.inputRow}>
-          <TouchableOpacity style={styles.inputButton} onPress={pickImage}>
+          <TouchableOpacity
+            style={styles.inputButton}
+            onPress={pickImage}
+            accessible={true}
+            accessibilityLabel="Attach image"
+            accessibilityHint="Opens image picker to select a photo to send"
+            accessibilityRole="button"
+          >
             <ImageIcon size={24} color="#9C6ADE" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.inputButton} onPress={isRecording ? stopRecording : startRecording}>
+          <TouchableOpacity
+            style={styles.inputButton}
+            onPress={isRecording ? stopRecording : startRecording}
+            accessible={true}
+            accessibilityLabel={isRecording ? "Stop recording" : "Start recording"}
+            accessibilityHint={isRecording ? "Tap to stop voice recording" : "Tap to start voice recording"}
+            accessibilityRole="button"
+          >
             <Mic size={24} color={isRecording ? '#FF6B8A' : '#9C6ADE'} />
           </TouchableOpacity>
           <View style={styles.textInputContainer}>
@@ -355,7 +392,14 @@ export default function ChatScreen() {
               placeholderTextColor="#999999"
               multiline
             />
-            <TouchableOpacity style={styles.inputAttachment} onPress={() => setEmojiPickerVisible(true)}>
+            <TouchableOpacity
+              style={styles.inputAttachment}
+              onPress={() => setEmojiPickerVisible(true)}
+              accessible={true}
+              accessibilityLabel="Add emoji"
+              accessibilityHint="Opens emoji picker"
+              accessibilityRole="button"
+            >
               <Smile size={24} color="#9C6ADE" />
             </TouchableOpacity>
           </View>
@@ -366,6 +410,11 @@ export default function ChatScreen() {
             ]}
             onPress={handleSend}
             disabled={!message.trim() || isConnected === false}
+            accessible={true}
+            accessibilityLabel="Send message"
+            accessibilityHint="Sends your message to your companion"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !message.trim() || isConnected === false }}
           >
             <Send size={24} color={message.trim() && isConnected !== false ? "#FFFFFF" : "#BBBBBB"} />
           </TouchableOpacity>
@@ -530,6 +579,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#E1E1E1',
     borderWidth: 2,
     borderColor: '#FFFFFF',
+  },
+  avatarSpacer: {
+    width: 28,
+    marginRight: 10,
+  },
+  groupedMessage: {
+    marginBottom: 4,
   },
   messageContent: {
     padding: 14,
