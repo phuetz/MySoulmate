@@ -1,19 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Heart, Gift, Clock, Star, MessageCircle, Mic, Video, Trophy, Target, Zap, Sparkles } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AgeVerificationModal from '@/components/AgeVerificationModal';
+import DailyStreakWidget from '@/components/DailyStreakWidget';
 import { useAppState } from '@/context/AppStateContext';
+
+interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastCheckIn: string | null;
+  nextMilestone: number;
+  hasCheckedInToday: boolean;
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const { companion, verified, setVerified, isPremium } = useAppState();
   const [showAgeVerification, setShowAgeVerification] = useState(!verified);
+  const [streakData, setStreakData] = useState<StreakData | null>(null);
+  const [loadingStreak, setLoadingStreak] = useState(true);
 
   const handleVerification = (isVerified) => {
     setVerified(isVerified);
     setShowAgeVerification(false);
+  };
+
+  useEffect(() => {
+    loadStreakData();
+  }, []);
+
+  const loadStreakData = async () => {
+    try {
+      setLoadingStreak(true);
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        setLoadingStreak(false);
+        return;
+      }
+
+      const response = await fetch('http://localhost:3000/api/v1/streaks/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success && data.streak) {
+        const streak = data.streak;
+        const today = new Date().toISOString().split('T')[0];
+        const lastCheckInDate = streak.lastCheckIn ? new Date(streak.lastCheckIn).toISOString().split('T')[0] : null;
+        const hasCheckedInToday = lastCheckInDate === today;
+
+        // Calculate next milestone
+        const milestones = [3, 7, 14, 30, 100];
+        const nextMilestone = milestones.find(m => m > streak.currentStreak) || 100;
+        const daysUntilMilestone = nextMilestone - (streak.currentStreak % nextMilestone);
+
+        setStreakData({
+          currentStreak: streak.currentStreak || 0,
+          longestStreak: streak.longestStreak || 0,
+          lastCheckIn: streak.lastCheckIn,
+          nextMilestone,
+          hasCheckedInToday,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading streak data:', error);
+    } finally {
+      setLoadingStreak(false);
+    }
+  };
+
+  const handleCheckIn = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Error', 'Please log in to check in');
+        return;
+      }
+
+      const response = await fetch('http://localhost:3000/api/v1/streaks/check-in', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        Alert.alert(
+          'Check-in Successful! 🎉',
+          `Streak: ${data.streak.currentStreak} days\nReward: ${data.reward.coins} coins + ${data.reward.xp} XP`,
+          [{ text: 'Awesome!', onPress: () => loadStreakData() }]
+        );
+      } else {
+        Alert.alert('Error', data.message || 'Failed to check in');
+      }
+    } catch (error) {
+      console.error('Error checking in:', error);
+      Alert.alert('Error', 'Failed to check in. Please try again.');
+    }
   };
 
 
@@ -35,12 +125,27 @@ export default function HomeScreen() {
               <Image
                 source={{ uri: companion.avatarUrl }}
                 style={styles.avatar}
+                accessible={true}
+                accessibilityLabel={`${companion.name}'s avatar`}
+                accessibilityRole="image"
               />
-              <View style={styles.avatarGlow} />
+              <View style={styles.avatarGlow} accessible={false} />
             </View>
             <View style={styles.companionInfo}>
-              <Text style={styles.name}>{companion.name}</Text>
-              <View style={styles.relationshipContainer}>
+              <Text
+                style={styles.name}
+                accessible={true}
+                accessibilityLabel={`Companion name: ${companion.name}`}
+                accessibilityRole="text"
+              >
+                {companion.name}
+              </Text>
+              <View
+                style={styles.relationshipContainer}
+                accessible={true}
+                accessibilityLabel={`Relationship status: ${companion.relationshipStatus}`}
+                accessibilityRole="text"
+              >
                 <Heart size={18} color="#FFFFFF" fill="#FFFFFF" style={styles.relationshipIcon} />
                 <Text style={styles.relationshipText}>
                   {companion.relationshipStatus}
@@ -86,17 +191,29 @@ export default function HomeScreen() {
             <Text style={styles.xpText}>{companion.xp || 0} XP</Text>
           </View>
           <View style={styles.progressBar}>
-            <View 
+            <View
               style={[
-                styles.progressFill, 
+                styles.progressFill,
                 { width: `${((companion.xp || 0) % 100)}%` }
-              ]} 
+              ]}
             />
           </View>
           <Text style={styles.progressSubtext}>
             {100 - ((companion.xp || 0) % 100)} XP to level {(companion.level || 1) + 1}
           </Text>
         </View>
+
+        {streakData && (
+          <DailyStreakWidget
+            currentStreak={streakData.currentStreak}
+            longestStreak={streakData.longestStreak}
+            nextMilestone={streakData.nextMilestone}
+            daysUntilMilestone={streakData.nextMilestone - (streakData.currentStreak % streakData.nextMilestone)}
+            onCheckIn={handleCheckIn}
+            hasCheckedInToday={streakData.hasCheckedInToday}
+            loading={loadingStreak}
+          />
+        )}
 
         <View style={styles.activityFeed}>
           <Text style={styles.sectionTitle}>Recent Activity</Text>
@@ -119,19 +236,47 @@ export default function HomeScreen() {
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/chat')}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push('/chat')}
+              accessible={true}
+              accessibilityLabel="Start chat"
+              accessibilityHint="Opens the chat screen to message your AI companion"
+              accessibilityRole="button"
+            >
               <MessageCircle size={24} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Chat</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/voice')}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push('/voice')}
+              accessible={true}
+              accessibilityLabel="Start voice call"
+              accessibilityHint="Opens the voice call screen to talk with your companion"
+              accessibilityRole="button"
+            >
               <Mic size={24} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Voice</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/video')}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push('/video')}
+              accessible={true}
+              accessibilityLabel="Start video call"
+              accessibilityHint="Opens the video call screen"
+              accessibilityRole="button"
+            >
               <Video size={24} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Video</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/games')}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => router.push('/games')}
+              accessible={true}
+              accessibilityLabel="Play games"
+              accessibilityHint="Opens the games screen to play mini-games"
+              accessibilityRole="button"
+            >
               <Target size={24} color="#FFFFFF" />
               <Text style={styles.actionButtonText}>Games</Text>
             </TouchableOpacity>
@@ -145,15 +290,42 @@ export default function HomeScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.premiumBanner}
           >
-            <Sparkles size={32} color="#FFD700" fill="#FFD700" />
-            <View style={styles.premiumTextContainer}>
-              <Text style={styles.premiumTitle}>Upgrade to Premium</Text>
-              <Text style={styles.premiumDescription}>
-                Unlock NSFW content, advanced personality traits, and more
+            <View style={styles.premiumContent}>
+              <View style={styles.premiumBadge}>
+                <Star size={16} color="#FFD700" fill="#FFD700" />
+                <Text style={styles.premiumBadgeText}>7-DAY FREE TRIAL</Text>
+              </View>
+              <View style={styles.premiumHeader}>
+                <Sparkles size={28} color="#FFD700" fill="#FFD700" style={styles.premiumIcon} />
+                <Text style={styles.premiumTitle}>Try Premium Free</Text>
+              </View>
+              <Text style={styles.premiumSubtitle}>
+                Join 10,000+ users • From $7.99/month
               </Text>
+              <View style={styles.premiumFeatures}>
+                <View style={styles.featureItem}>
+                  <Text style={styles.featureIcon}>✓</Text>
+                  <Text style={styles.featureText}>Unlimited stories</Text>
+                </View>
+                <View style={styles.featureItem}>
+                  <Text style={styles.featureIcon}>✓</Text>
+                  <Text style={styles.featureText}>NSFW mode</Text>
+                </View>
+                <View style={styles.featureItem}>
+                  <Text style={styles.featureIcon}>✓</Text>
+                  <Text style={styles.featureText}>5 AI images/month</Text>
+                </View>
+              </View>
             </View>
-            <TouchableOpacity style={styles.premiumButton} onPress={() => router.push('/settings')}>
-              <Text style={styles.premiumButtonText}>Upgrade</Text>
+            <TouchableOpacity
+              style={styles.premiumButton}
+              onPress={() => router.push('/settings')}
+              accessible={true}
+              accessibilityLabel="Start 7-day free trial"
+              accessibilityHint="Tap to upgrade to premium and start your free trial"
+              accessibilityRole="button"
+            >
+              <Text style={styles.premiumButtonText}>Start Free Trial →</Text>
             </TouchableOpacity>
           </LinearGradient>
         )}
@@ -410,38 +582,90 @@ const styles = StyleSheet.create({
   },
   premiumBanner: {
     marginHorizontal: 20,
-    padding: 20,
-    borderRadius: 20,
+    padding: 24,
+    borderRadius: 24,
     marginBottom: 24,
+    overflow: 'hidden',
+    shadowColor: '#9C6ADE',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  premiumContent: {
+    marginBottom: 16,
+  },
+  premiumBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
   },
-  premiumTextContainer: {
-    flex: 1,
-    marginLeft: 14,
+  premiumBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFD700',
+    marginLeft: 6,
+    letterSpacing: 0.5,
+  },
+  premiumHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  premiumIcon: {
+    marginRight: 10,
   },
   premiumTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 4,
   },
-  premiumDescription: {
+  premiumSubtitle: {
     fontSize: 14,
     color: '#FFFFFF',
     opacity: 0.9,
-    lineHeight: 20,
+    marginBottom: 16,
+    fontWeight: '500',
+  },
+  premiumFeatures: {
+    gap: 8,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  featureIcon: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    marginRight: 8,
+  },
+  featureText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    opacity: 0.95,
   },
   premiumButton: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   premiumButtonText: {
     color: '#9C6ADE',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
   },
 });

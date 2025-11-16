@@ -13,6 +13,7 @@ import { Stack, useRouter } from 'expo-router';
 import { BookOpen, Clock, Star, Lock, Play, RotateCcw, CheckCircle2 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StoryCardSkeleton } from '@/components/SkeletonLoader';
 
 interface Story {
   id: string;
@@ -280,10 +281,39 @@ export default function StoryMode() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#FF6B8A" />
-        <Text className="mt-4 text-gray-600">Loading stories...</Text>
-      </View>
+      <>
+        <Stack.Screen
+          options={{
+            title: 'Story Mode',
+            headerStyle: { backgroundColor: '#FF6B8A' },
+            headerTintColor: 'white',
+            headerTitleStyle: { fontWeight: 'bold' }
+          }}
+        />
+        <ScrollView className="flex-1 bg-gray-50">
+          <LinearGradient
+            colors={['#FF6B8A', '#9C6ADE']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            className="p-6"
+          >
+            <View className="flex-row items-center mb-2">
+              <BookOpen size={32} color="white" />
+              <Text className="text-white text-2xl font-bold ml-3">
+                Interactive Stories
+              </Text>
+            </View>
+            <Text className="text-white/90 text-sm">
+              Your choices shape the story. Embark on adventures with your companion!
+            </Text>
+          </LinearGradient>
+          <View className="px-4 pt-4">
+            <StoryCardSkeleton />
+            <StoryCardSkeleton />
+            <StoryCardSkeleton />
+          </View>
+        </ScrollView>
+      </>
     );
   }
 
